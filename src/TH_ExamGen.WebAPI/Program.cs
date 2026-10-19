@@ -229,6 +229,13 @@ app.MapPost("/api/admin/keys/generate", async (AdminGenerateKeysDto req, HttpCon
     return Results.Ok(new { keys });
 });
 
+app.MapGet("/api/admin/db-status", (HttpContext ctx) =>
+{
+    string? pin = ctx.Request.Headers["X-Admin-Pin"].FirstOrDefault();
+    if (!authService.VerifyAdminPin(pin ?? "")) return Results.Unauthorized();
+    return Results.Ok(dbService.GetStatus());
+});
+
 // 3. Curriculum / Matrix
 app.MapGet("/api/curriculum/viet/matrix", (int grade, string period) =>
 {

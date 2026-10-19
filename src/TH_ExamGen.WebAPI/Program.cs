@@ -123,16 +123,32 @@ app.MapPost("/api/settings", (AppSettings newSettings) =>
 // 2b. Authentication & User Account Endpoints
 app.MapPost("/api/auth/register", async (RegisterDto req) =>
 {
-    var (success, msg, token, user) = await authService.RegisterAsync(req.Phone, req.Password, req.FullName, req.School, req.DeviceId);
-    if (!success) return Results.BadRequest(new { error = msg });
-    return Results.Ok(new { message = msg, token, user });
+    try
+    {
+        var (success, msg, token, user) = await authService.RegisterAsync(req.Phone, req.Password, req.FullName, req.School, req.DeviceId);
+        if (!success) return Results.BadRequest(new { error = msg });
+        return Results.Ok(new { message = msg, token, user });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[AUTH ERROR] Register failed: {ex}");
+        return Results.BadRequest(new { error = "Lỗi hệ thống khi đăng ký: " + ex.Message });
+    }
 });
 
 app.MapPost("/api/auth/login", async (LoginDto req) =>
 {
-    var (success, msg, token, user) = await authService.LoginAsync(req.Phone, req.Password, req.DeviceId);
-    if (!success) return Results.BadRequest(new { error = msg });
-    return Results.Ok(new { message = msg, token, user });
+    try
+    {
+        var (success, msg, token, user) = await authService.LoginAsync(req.Phone, req.Password, req.DeviceId);
+        if (!success) return Results.BadRequest(new { error = msg });
+        return Results.Ok(new { message = msg, token, user });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[AUTH ERROR] Login failed: {ex}");
+        return Results.BadRequest(new { error = "Lỗi hệ thống khi đăng nhập: " + ex.Message });
+    }
 });
 
 app.MapGet("/api/auth/me", async (HttpContext ctx) =>

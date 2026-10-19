@@ -134,7 +134,7 @@ namespace TH_ExamGen.WebAPI.Services
             {
                 insertCmd.CommandText = @"
                     INSERT INTO users (id, phone, password_hash, full_name, school, package_type, expire_at, total_quota_remaining, daily_quota_limit, daily_generated_count, last_generated_date, current_session_token, device_id, is_locked, created_at)
-                    VALUES (@id, @phone, @pwd, @name, @school, 'Trial', @expire, @quota, 1, 0, @today, @token, @devId, 0, @created)";
+                    VALUES (@id, @phone, @pwd, @name, @school, 'Trial', @expire, @quota, 1, 0, @today, @token, @devId, @isLocked, @created)";
 
                 AddParam(insertCmd, "@id", userId);
                 AddParam(insertCmd, "@phone", phone);
@@ -146,6 +146,7 @@ namespace TH_ExamGen.WebAPI.Services
                 AddParam(insertCmd, "@today", GetVietnamTodayString());
                 AddParam(insertCmd, "@token", sessionToken);
                 AddParam(insertCmd, "@devId", deviceId ?? "");
+                AddParam(insertCmd, "@isLocked", false);
                 AddParam(insertCmd, "@created", DateTime.UtcNow);
 
                 await insertCmd.ExecuteNonQueryAsync();
@@ -396,11 +397,12 @@ namespace TH_ExamGen.WebAPI.Services
             {
                 updateKeyCmd.CommandText = @"
                     UPDATE license_keys
-                    SET is_used = 1,
+                    SET is_used = @isUsed,
                         used_by_phone = @phone,
                         used_at = @usedAt
                     WHERE id = @keyId";
 
+                AddParam(updateKeyCmd, "@isUsed", true);
                 AddParam(updateKeyCmd, "@phone", user.Phone);
                 AddParam(updateKeyCmd, "@usedAt", now);
                 AddParam(updateKeyCmd, "@keyId", key.Id);
@@ -520,13 +522,14 @@ namespace TH_ExamGen.WebAPI.Services
                     expire_at = @expire,
                     total_quota_remaining = total_quota_remaining + @quota,
                     daily_quota_limit = @dailyLimit,
-                    is_locked = 0
+                    is_locked = @isLocked
                 WHERE phone = @phone";
 
             AddParam(cmd, "@pkg", finalPkg);
             AddParam(cmd, "@expire", newExpire);
             AddParam(cmd, "@quota", quota);
             AddParam(cmd, "@dailyLimit", dailyLimit);
+            AddParam(cmd, "@isLocked", false);
             AddParam(cmd, "@phone", phone);
 
             int affected = await cmd.ExecuteNonQueryAsync();
@@ -539,7 +542,7 @@ namespace TH_ExamGen.WebAPI.Services
             await conn.OpenAsync();
 
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "UPDATE users SET is_locked = CASE WHEN is_locked = 1 THEN 0 ELSE 1 END WHERE id = @uid";
+            cmd.CommandText = "UPDATE users SET is_locked = NOT is_locked WHERE id = @uid";
             AddParam(cmd, "@uid", userId);
             int affected = await cmd.ExecuteNonQueryAsync();
             return affected > 0;
@@ -564,7 +567,7 @@ namespace TH_ExamGen.WebAPI.Services
                 using var cmd = conn.CreateCommand();
                 cmd.CommandText = @"
                     INSERT INTO license_keys (id, key_code, package_type, days_duration, quota_amount, daily_limit, is_used, created_at)
-                    VALUES (@id, @code, @pkg, @days, @quota, @daily, 0, @created)";
+                    VALUES (@id, @code, @pkg, @days, @quota, @daily, @isUsed, @created)";
 
                 AddParam(cmd, "@id", Guid.NewGuid().ToString("N"));
                 AddParam(cmd, "@code", keyCode);
@@ -572,6 +575,7 @@ namespace TH_ExamGen.WebAPI.Services
                 AddParam(cmd, "@days", days);
                 AddParam(cmd, "@quota", quota);
                 AddParam(cmd, "@daily", dailyLimit);
+                AddParam(cmd, "@isUsed", false);
                 AddParam(cmd, "@created", DateTime.UtcNow);
 
                 await cmd.ExecuteNonQueryAsync();

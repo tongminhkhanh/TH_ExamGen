@@ -238,6 +238,7 @@ namespace TH_ExamGen.WebAPI.Database
                     {
                         testBuilder.SslMode = SslMode.Require;
                     }
+                    testBuilder["No Reset On Close"] = true;
                     return testBuilder.ConnectionString;
                 }
                 catch
@@ -330,6 +331,7 @@ namespace TH_ExamGen.WebAPI.Database
                     Timeout = 15,
                     CommandTimeout = 30
                 };
+                builder["No Reset On Close"] = true;
 
                 return builder.ConnectionString;
             }

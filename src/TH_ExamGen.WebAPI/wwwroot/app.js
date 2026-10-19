@@ -113,7 +113,12 @@ async function submitLogin() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ phone, password, deviceId })
         });
-        const data = await res.json();
+        let data = {};
+        try {
+            data = await res.json();
+        } catch (jsonErr) {
+            data = { error: `Lỗi kết nối máy chủ (Mã HTTP ${res.status})` };
+        }
         if (!res.ok) throw new Error(data.error || "Đăng nhập thất bại");
 
         sessionToken = data.token;
@@ -153,7 +158,12 @@ async function submitRegister() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ phone, password, fullName, school, deviceId })
         });
-        const data = await res.json();
+        let data = {};
+        try {
+            data = await res.json();
+        } catch (jsonErr) {
+            data = { error: `Lỗi kết nối máy chủ (Mã HTTP ${res.status})` };
+        }
         if (!res.ok) throw new Error(data.error || "Đăng ký thất bại");
 
         sessionToken = data.token;

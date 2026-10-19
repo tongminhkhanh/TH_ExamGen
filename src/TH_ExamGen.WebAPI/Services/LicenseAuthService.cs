@@ -18,8 +18,8 @@ namespace TH_ExamGen.WebAPI.Services
         public string School { get; set; } = "";
         public string PackageType { get; set; } = "Trial";
         public DateTime? ExpireAt { get; set; }
-        public int TotalQuotaRemaining { get; set; } = 3;
-        public int DailyQuotaLimit { get; set; } = 5;
+        public int TotalQuotaRemaining { get; set; } = 1;
+        public int DailyQuotaLimit { get; set; } = 1;
         public int DailyGeneratedCount { get; set; } = 0;
         public string LastGeneratedDate { get; set; } = "";
         public DateTime? LastGeneratedAt { get; set; }
@@ -107,8 +107,8 @@ namespace TH_ExamGen.WebAPI.Services
                 }
             }
 
-            // 2. Kiểm tra giới hạn Dùng Thử theo Thiết bị (Device ID - Max 2 tài khoản trial / thiết bị)
-            int initialQuota = 3;
+            // 2. Kiểm tra giới hạn Dùng Thử theo Thiết bị (Device ID - Max 1 tài khoản trial / thiết bị)
+            int initialQuota = 1;
             int initialDays = 3;
             if (!string.IsNullOrWhiteSpace(deviceId))
             {
@@ -119,9 +119,9 @@ namespace TH_ExamGen.WebAPI.Services
                 pDev.Value = deviceId;
                 devCmd.Parameters.Add(pDev);
                 long devCount = Convert.ToInt64(await devCmd.ExecuteScalarAsync());
-                if (devCount >= 2)
+                if (devCount >= 1)
                 {
-                    initialQuota = 0; // Đã quá số lần dùng thử trên máy này
+                    initialQuota = 0; // Đã nhận dùng thử trên máy này
                 }
             }
 
@@ -134,7 +134,7 @@ namespace TH_ExamGen.WebAPI.Services
             {
                 insertCmd.CommandText = @"
                     INSERT INTO users (id, phone, password_hash, full_name, school, package_type, expire_at, total_quota_remaining, daily_quota_limit, daily_generated_count, last_generated_date, current_session_token, device_id, is_locked, created_at)
-                    VALUES (@id, @phone, @pwd, @name, @school, 'Trial', @expire, @quota, 3, 0, @today, @token, @devId, 0, @created)";
+                    VALUES (@id, @phone, @pwd, @name, @school, 'Trial', @expire, @quota, 1, 0, @today, @token, @devId, 0, @created)";
 
                 AddParam(insertCmd, "@id", userId);
                 AddParam(insertCmd, "@phone", phone);
@@ -152,7 +152,7 @@ namespace TH_ExamGen.WebAPI.Services
             }
 
             var user = await GetUserByPhoneAsync(phone);
-            return (true, "Đăng ký tài khoản thành công!", sessionToken, user);
+            return (true, "Đăng ký tài khoản thành công! Thầy/Cô nhận được 1 đề thi dùng thử miễn phí.", sessionToken, user);
         }
 
         public async Task<(bool Success, string Message, string? SessionToken, UserRecord? User)> LoginAsync(string phone, string password, string deviceId)
@@ -499,8 +499,8 @@ namespace TH_ExamGen.WebAPI.Services
             if (user == null) return false;
 
             int days = packageType == "Year" ? 365 : (packageType == "School" ? 365 : (packageType == "Bonus5" ? 0 : 150));
-            int quota = packageType == "Year" ? 90 : (packageType == "School" ? 300 : (packageType == "Bonus5" ? 5 : 35));
-            int dailyLimit = packageType == "Year" ? 8 : (packageType == "School" ? 15 : (packageType == "Bonus5" ? user.DailyQuotaLimit : 5));
+            int quota = packageType == "Year" ? 30 : (packageType == "School" ? 100 : (packageType == "Bonus5" ? 5 : 15));
+            int dailyLimit = packageType == "Year" ? 4 : (packageType == "School" ? 10 : (packageType == "Bonus5" ? user.DailyQuotaLimit : 2));
 
             var now = GetVietnamNow();
             DateTime newExpire = (packageType == "Bonus5")
@@ -548,8 +548,8 @@ namespace TH_ExamGen.WebAPI.Services
         public async Task<List<string>> AdminGenerateKeysAsync(string packageType, int count)
         {
             int days = packageType == "Year" ? 365 : (packageType == "SchoolItem" ? 365 : 150);
-            int quota = packageType == "Year" ? 90 : (packageType == "SchoolItem" ? 60 : 35);
-            int dailyLimit = packageType == "Year" ? 8 : 5;
+            int quota = packageType == "Year" ? 30 : (packageType == "SchoolItem" ? 20 : 15);
+            int dailyLimit = packageType == "Year" ? 4 : (packageType == "SchoolItem" ? 3 : 2);
             string prefix = packageType == "Year" ? "NAM" : (packageType == "SchoolItem" ? "TRUONG" : "KY");
 
             var generatedCodes = new List<string>();

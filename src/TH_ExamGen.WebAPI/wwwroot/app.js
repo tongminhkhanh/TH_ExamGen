@@ -146,7 +146,7 @@ async function submitRegister() {
         return;
     }
 
-    showLoading("Đang đăng ký tài khoản & kích hoạt 3 đề dùng thử...");
+    showLoading("Đang đăng ký tài khoản & kích hoạt 1 đề dùng thử...");
     try {
         const res = await fetch("/api/auth/register", {
             method: "POST",
@@ -163,7 +163,7 @@ async function submitRegister() {
 
         updateUserHeaderUI(currentUser);
         closeAuthModal();
-        alert(`Chúc mừng Thầy/Cô đã đăng ký thành công và nhận được 3 lượt tạo đề thi miễn phí!`);
+        alert(`Chúc mừng Thầy/Cô đã đăng ký thành công và nhận được 1 lượt tạo đề thi miễn phí!`);
     } catch (err) {
         alert("Lỗi đăng ký: " + err.message);
     } finally {
@@ -202,7 +202,7 @@ function openPricingModal() {
     } else {
         banner.innerHTML = `
             <div style="color: #92400e;">
-                ⚠️ Thầy/Cô chưa đăng nhập. Vui lòng <a href="javascript:void(0)" onclick="closePricingModal(); openAuthModal('login');" style="color: var(--primary); font-weight: 700;">Đăng nhập hoặc Đăng ký</a> để nạp mã bản quyền hoặc nhận 3 đề thi dùng thử miễn phí.
+                ⚠️ Thầy/Cô chưa đăng nhập. Vui lòng <a href="javascript:void(0)" onclick="closePricingModal(); openAuthModal('login');" style="color: var(--primary); font-weight: 700;">Đăng nhập hoặc Đăng ký</a> để nạp mã bản quyền hoặc nhận 1 đề thi dùng thử miễn phí.
             </div>
         `;
     }

@@ -218,9 +218,9 @@
                     <div>
                         <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 4px;">Loại gói bản quyền:</label>
                         <select id="keyGenPackageType" style="width: 100%; padding: 8px 10px; border: 1px solid var(--gray-300); border-radius: 6px;">
-                            <option value="Term">Gói Học Kỳ (35 đề / 150 ngày / Max 5 đề/ngày)</option>
-                            <option value="Year" selected>Gói Cả Năm (90 đề / 365 ngày / Max 8 đề/ngày)</option>
-                            <option value="SchoolItem">Gói Tổ Chuyên Môn / Trường (1 mã x 60 đề / 365 ngày)</option>
+                            <option value="Term">Gói Học Kỳ (15 đề / 150 ngày / Max 2 đề/ngày)</option>
+                            <option value="Year" selected>Gói Cả Năm (30 đề / 365 ngày / Max 4 đề/ngày)</option>
+                            <option value="SchoolItem">Gói Tổ Chuyên Môn / Trường (1 mã x 20 đề / 365 ngày)</option>
                         </select>
                     </div>
                     <div>
@@ -310,8 +310,8 @@
     school TEXT,
     package_type TEXT DEFAULT 'Trial',
     expire_at TIMESTAMP WITH TIME ZONE,
-    total_quota_remaining INT DEFAULT 3,
-    daily_quota_limit INT DEFAULT 5,
+    total_quota_remaining INT DEFAULT 1,
+    daily_quota_limit INT DEFAULT 1,
     daily_generated_count INT DEFAULT 0,
     last_generated_date TEXT,
     last_generated_at TIMESTAMP WITH TIME ZONE,
@@ -485,8 +485,8 @@ CREATE TABLE IF NOT EXISTS exam_logs (
                     <td style="text-align: center;">${statusHtml}</td>
                     <td style="text-align: center;">
                         <div style="display: flex; gap: 4px; justify-content: center; flex-wrap: wrap;">
-                            <button class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="adminActivateUser('${u.phone}', 'Term')" title="Kích hoạt Gói Kỳ (35 đề / 150 ngày)">+ Kỳ</button>
-                            <button class="btn btn-primary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="adminActivateUser('${u.phone}', 'Year')" title="Kích hoạt Gói Năm (90 đề / 365 ngày)">+ Năm</button>
+                            <button class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="adminActivateUser('${u.phone}', 'Term')" title="Kích hoạt Gói Kỳ (15 đề / 150 ngày)">+ Kỳ</button>
+                            <button class="btn btn-primary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="adminActivateUser('${u.phone}', 'Year')" title="Kích hoạt Gói Năm (30 đề / 365 ngày)">+ Năm</button>
                             <button class="btn btn-success btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="adminActivateUser('${u.phone}', 'Bonus5')" title="Tặng thêm 5 đề">+5 Đề</button>
                             <button class="btn ${isLocked ? 'btn-success' : 'btn-danger'} btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="adminToggleLock('${u.id}')">
                                 ${isLocked ? 'Mở Khóa' : 'Khóa'}
@@ -513,7 +513,7 @@ CREATE TABLE IF NOT EXISTS exam_logs (
         }
 
         async function adminActivateUser(phone, packageType) {
-            const pkgNames = { Term: "Gói Học Kỳ (35 đề)", Year: "Gói Cả Năm (90 đề)", Bonus5: "Tặng 5 đề thi" };
+            const pkgNames = { Term: "Gói Học Kỳ (15 đề)", Year: "Gói Cả Năm (30 đề)", Bonus5: "Tặng 5 đề thi" };
             if (!confirm(`Xác nhận kích hoạt ${pkgNames[packageType] || packageType} cho số điện thoại ${phone}?`)) return;
 
             showAdminLoading("Đang kích hoạt...");
@@ -537,7 +537,7 @@ CREATE TABLE IF NOT EXISTS exam_logs (
         async function openDirectActivatePrompt() {
             const phone = prompt("Nhập Số Điện Thoại khách hàng cần kích hoạt bản quyền:");
             if (!phone) return;
-            const pkg = prompt("Chọn loại gói:\n1 = Gói Học Kỳ (35 đề)\n2 = Gói Cả Năm (90 đề)\n3 = Gói Trường (300 đề)\nNhập số 1, 2 hoặc 3:", "2");
+            const pkg = prompt("Chọn loại gói:\n1 = Gói Học Kỳ (15 đề)\n2 = Gói Cả Năm (30 đề)\n3 = Gói Trường (100 đề / 5 mã)\nNhập số 1, 2 hoặc 3:", "2");
             let packageType = "Year";
             if (pkg === "1") packageType = "Term";
             else if (pkg === "3") packageType = "School";

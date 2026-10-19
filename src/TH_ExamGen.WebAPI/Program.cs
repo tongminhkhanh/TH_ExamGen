@@ -44,6 +44,9 @@ AppSettings GetEffectiveSettings(AppSettings? clientOverrides = null)
     var envProvider = Environment.GetEnvironmentVariable("AI_PROVIDER");
     if (!string.IsNullOrWhiteSpace(envProvider)) settings.AiProvider = envProvider;
 
+    var envModel = Environment.GetEnvironmentVariable("GEMINI_MODEL");
+    if (!string.IsNullOrWhiteSpace(envModel)) settings.GeminiModel = envModel;
+
     if (clientOverrides != null)
     {
         if (!string.IsNullOrWhiteSpace(clientOverrides.TenUBND)) settings.TenUBND = clientOverrides.TenUBND;
@@ -71,6 +74,7 @@ app.MapGet("/api/settings", () =>
     {
         s.AiProvider,
         s.ActiveModel,
+        s.GeminiModel,
         s.TenUBND,
         s.TenTruong,
         s.NamHoc,

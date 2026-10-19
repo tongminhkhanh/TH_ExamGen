@@ -234,7 +234,7 @@ namespace TH_ExamGen.Services
         {
             if (string.IsNullOrWhiteSpace(model))
             {
-                model = "gemini-2.5-flash";
+                model = "gemini-3.8-flash";
             }
 
             string url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent";
@@ -382,7 +382,7 @@ namespace TH_ExamGen.Services
         {
             if (string.IsNullOrWhiteSpace(model))
             {
-                model = "gemini-2.5-flash";
+                model = "gemini-3.8-flash";
             }
 
             string url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent";

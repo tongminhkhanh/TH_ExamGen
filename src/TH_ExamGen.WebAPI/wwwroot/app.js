@@ -623,6 +623,9 @@ async function loadSettings() {
             document.getElementById("cfgTruong").value = data.tenTruong || "";
             document.getElementById("cfgNamHoc").value = data.namHoc || "";
             document.getElementById("cfgAiProvider").value = data.aiProvider || "Gemini";
+            if (data.geminiModel) {
+                document.getElementById("cfgGeminiModel").value = data.geminiModel;
+            }
             if (data.hasGeminiKey) {
                 document.getElementById("cfgGeminiKey").placeholder = data.geminiApiKey || "(Đã lưu khóa)";
             }
@@ -638,6 +641,7 @@ async function saveSettings() {
         tenTruong: document.getElementById("cfgTruong").value.trim(),
         namHoc: document.getElementById("cfgNamHoc").value.trim(),
         aiProvider: document.getElementById("cfgAiProvider").value,
+        geminiModel: document.getElementById("cfgGeminiModel").value,
         geminiApiKey: document.getElementById("cfgGeminiKey").value.trim(),
         deepSeekApiKey: document.getElementById("cfgDeepSeekKey").value.trim()
     };

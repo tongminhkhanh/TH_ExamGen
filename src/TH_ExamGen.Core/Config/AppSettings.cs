@@ -7,7 +7,7 @@ namespace TH_ExamGen.Core.Config
     {
         public string AiProvider { get; set; } = "Gemini"; // "Gemini" hoặc "DeepSeek"
         public string GeminiApiKey { get; set; } = string.Empty;
-        public string GeminiModel { get; set; } = "gemini-2.5-flash";
+        public string GeminiModel { get; set; } = "gemini-3.8-flash";
         public string DeepSeekApiKey { get; set; } = string.Empty;
         public string DeepSeekModel { get; set; } = "deepseek-chat";
         public string TenUBND { get; set; } = "ỦY BAN NHÂN DÂN XÃ MƯỜNG LA";
@@ -35,7 +35,7 @@ namespace TH_ExamGen.Core.Config
         [System.Text.Json.Serialization.JsonIgnore]
         public string ActiveModel => (AiProvider?.Equals("DeepSeek", System.StringComparison.OrdinalIgnoreCase) == true)
             ? (string.IsNullOrWhiteSpace(DeepSeekModel) ? "deepseek-chat" : DeepSeekModel)
-            : (string.IsNullOrWhiteSpace(GeminiModel) ? "gemini-2.5-flash" : GeminiModel);
+            : (string.IsNullOrWhiteSpace(GeminiModel) ? "gemini-3.8-flash" : GeminiModel);
 
         [System.Text.Json.Serialization.JsonIgnore]
         public string ActiveProviderDisplayName => (AiProvider?.Equals("DeepSeek", System.StringComparison.OrdinalIgnoreCase) == true)

@@ -230,12 +230,17 @@ namespace TH_ExamGen.Services
             }
         }
 
+        private static string NormalizeGeminiModel(string? model)
+        {
+            if (string.IsNullOrWhiteSpace(model)) return "gemini-2.5-flash";
+            var m = model.Trim();
+            if (m.Contains("3.8") || m.Contains("3.")) return "gemini-2.5-flash";
+            return m;
+        }
+
         private async Task<string> GenerateGeminiRawAsync(string apiKey, string model, string promptText, CancellationToken ct = default)
         {
-            if (string.IsNullOrWhiteSpace(model))
-            {
-                model = "gemini-3.8-flash";
-            }
+            model = NormalizeGeminiModel(model);
 
             string url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent";
 
@@ -269,6 +274,13 @@ namespace TH_ExamGen.Services
             }, ct);
 
             string responseBody = await response.Content.ReadAsStringAsync(ct);
+
+            // Tự động chuyển dự phòng sang gemini-1.5-flash nếu model hiện tại trả về 404 Not Found
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound && model != "gemini-1.5-flash")
+            {
+                AppLogger.Warn($"Model {model} không tìm thấy (404), tự động chuyển sang gemini-1.5-flash...");
+                return await GenerateGeminiRawAsync(apiKey, "gemini-1.5-flash", promptText, ct);
+            }
 
             if (!response.IsSuccessStatusCode)
             {
@@ -380,10 +392,7 @@ namespace TH_ExamGen.Services
 
         private async Task<string> GenerateGeminiTextAsync(string apiKey, string model, string promptText, CancellationToken ct = default)
         {
-            if (string.IsNullOrWhiteSpace(model))
-            {
-                model = "gemini-3.8-flash";
-            }
+            model = NormalizeGeminiModel(model);
 
             string url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent";
 
@@ -416,6 +425,13 @@ namespace TH_ExamGen.Services
             }, ct);
 
             string responseBody = await response.Content.ReadAsStringAsync(ct);
+
+            // Tự động chuyển dự phòng sang gemini-1.5-flash nếu model hiện tại trả về 404 Not Found
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound && model != "gemini-1.5-flash")
+            {
+                AppLogger.Warn($"Model {model} không tìm thấy (404), tự động chuyển sang gemini-1.5-flash...");
+                return await GenerateGeminiTextAsync(apiKey, "gemini-1.5-flash", promptText, ct);
+            }
 
             if (!response.IsSuccessStatusCode)
             {

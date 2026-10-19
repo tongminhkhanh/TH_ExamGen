@@ -1,0 +1,176 @@
+<Window x:Class="TH_ExamGen.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TH_ExamGen.UI"
+        mc:Ignorable="d"
+        Title="TH-Exam Studio — Trường Tiểu học Ít Ong (Chuẩn GDPT 2018)" 
+        Icon="pack://application:,,,/Assets/school_logo.png"
+        Height="820" Width="1300" MinHeight="680" MinWidth="1100"
+        WindowStartupLocation="CenterScreen" Background="#F1F5F9"
+        FontFamily="Segoe UI">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="275"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Navigation Sidebar -->
+        <Border Grid.Column="0" Background="{StaticResource BrushSidebar}" BorderBrush="#1E293B" BorderThickness="0,0,1,0">
+            <Grid Margin="16,20,16,18">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Brand / Logo Trường Tiểu học Ít Ong -->
+                <StackPanel Grid.Row="0" Margin="0,0,0,24">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Width="46" Height="46" CornerRadius="23" Margin="0,0,12,0"
+                                BorderBrush="{StaticResource BrushPrimary}" BorderThickness="1.5" Background="#1E293B">
+                            <Border.Clip>
+                                <EllipseGeometry Center="23,23" RadiusX="22.5" RadiusY="22.5"/>
+                            </Border.Clip>
+                            <Image Source="pack://application:,,,/Assets/school_logo.png" 
+                                   RenderOptions.BitmapScalingMode="HighQuality"
+                                   Stretch="UniformToFill"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="TH-Exam Studio" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="Trường TH Ít Ong • GDPT 2018" FontSize="11" Foreground="#38BDF8" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Navigation Menu -->
+                <StackPanel Grid.Row="1">
+                    <TextBlock Text="PHÂN HỆ CHUYÊN BIỆT" FontSize="10.5" FontWeight="Bold" Foreground="#64748B" Margin="8,0,0,10"/>
+
+                    <!-- Nav: Môn Toán -->
+                    <Button x:Name="BtnNavMath" Height="52" Margin="0,0,0,6" Padding="12,0" Cursor="Hand"
+                            HorizontalContentAlignment="Left" Background="#1E293B" BorderThickness="0"
+                            Click="BtnNavMath_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="9"/>
+                            </Style>
+                        </Button.Resources>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="34"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Width="30" Height="30" CornerRadius="6" Background="#312E81" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                <Path Data="{StaticResource GeoMath}" Stroke="#A5B4FC" StrokeThickness="1.6" 
+                                      Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="6,0,0,0">
+                                <TextBlock Text="Tạo Đề Môn Toán" FontWeight="SemiBold" FontSize="13.5" Foreground="White"/>
+                                <TextBlock Text="Ma trận 10 câu • Phân số • TikZ" FontSize="10.5" Foreground="#94A3B8" Margin="0,1,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </Button>
+
+                    <!-- Nav: Môn Tiếng Việt -->
+                    <Button x:Name="BtnNavViet" Height="52" Margin="0,0,0,6" Padding="12,0" Cursor="Hand"
+                            HorizontalContentAlignment="Left" Background="Transparent" BorderThickness="0"
+                            Click="BtnNavViet_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="9"/>
+                            </Style>
+                        </Button.Resources>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="34"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Width="30" Height="30" CornerRadius="6" Background="#064E3B" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                <Path Data="{StaticResource GeoBook}" Stroke="#6EE7B7" StrokeThickness="1.6" 
+                                      Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="6,0,0,0">
+                                <TextBlock Text="Tạo Đề Tiếng Việt" FontWeight="SemiBold" FontSize="13.5" Foreground="White"/>
+                                <TextBlock Text="Đọc hiểu 11 câu • Kẻ ô ly" FontSize="10.5" Foreground="#94A3B8" Margin="0,1,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </Button>
+
+                    <TextBlock Text="CẤU HÌNH &amp; HỆ THỐNG" FontSize="10.5" FontWeight="Bold" Foreground="#64748B" Margin="8,18,0,10"/>
+
+                    <!-- Nav: Bản Quyền -->
+                    <Button x:Name="BtnNavLicense" Height="52" Margin="0,0,0,6" Padding="12,0" Cursor="Hand"
+                            HorizontalContentAlignment="Left" Background="Transparent" BorderThickness="0"
+                            Click="BtnNavLicense_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="9"/>
+                            </Style>
+                        </Button.Resources>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="34"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Width="30" Height="30" CornerRadius="6" Background="#1E293B" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                <Path Data="{StaticResource GeoShieldCheck}" Stroke="#38BDF8" StrokeThickness="1.6" 
+                                      Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="6,0,0,0">
+                                <TextBlock Text="Bản Quyền Phần Mềm" FontWeight="SemiBold" FontSize="13.5" Foreground="White"/>
+                                <TextBlock x:Name="TxtNavLicenseSub" Text="Kích hoạt • Hạn bản quyền" FontSize="10.5" Foreground="#94A3B8" Margin="0,1,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </Button>
+
+                    <!-- Nav: Cài đặt -->
+                    <Button x:Name="BtnNavSettings" Height="52" Margin="0,0,0,6" Padding="12,0" Cursor="Hand"
+                            HorizontalContentAlignment="Left" Background="Transparent" BorderThickness="0"
+                            Click="BtnNavSettings_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="9"/>
+                            </Style>
+                        </Button.Resources>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="34"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Width="30" Height="30" CornerRadius="6" Background="#1E293B" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                <Path Data="{StaticResource GeoSettings}" Stroke="#94A3B8" StrokeThickness="1.6" 
+                                      Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="6,0,0,0">
+                                <TextBlock Text="Cài Đặt Hệ Thống" FontWeight="SemiBold" FontSize="13.5" Foreground="White"/>
+                                <TextBlock Text="Gemini • DeepSeek • Hồ sơ trường" FontSize="10.5" Foreground="#94A3B8" Margin="0,1,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </Button>
+                </StackPanel>
+
+                <!-- Bottom Status -->
+                <Border Grid.Row="2" Background="#1E293B" CornerRadius="10" Padding="12,11" BorderBrush="#334155" BorderThickness="1">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="8" Height="8" Fill="#10B981" Margin="0,0,7,0"/>
+                            <TextBlock x:Name="TxtActiveAiEngine" Text="AI: Gemini Flash" FontSize="11.5" Foreground="#F1F5F9" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,4,0,0">
+                            <Path Data="{StaticResource GeoShieldCheck}" Stroke="#38BDF8" StrokeThickness="1.4" Width="10" Height="10" Stretch="Uniform" Margin="0,0,6,0"/>
+                            <TextBlock x:Name="TxtLicenseStatus" Text="Bản quyền: Đang kiểm tra..." FontSize="10.5" Foreground="#38BDF8" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        <TextBlock x:Name="TxtEnvStatus" Text="Đang kiểm tra môi trường..." FontSize="10.5" Foreground="#94A3B8" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Main Content Area -->
+        <Grid Grid.Column="1" Background="{StaticResource BrushCanvas}">
+            <ContentControl x:Name="MainContentHost"/>
+        </Grid>
+    </Grid>
+</Window>

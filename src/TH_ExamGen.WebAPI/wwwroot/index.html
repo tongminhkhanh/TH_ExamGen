@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TH_ExamGen Web - Hệ Thống Soạn Ma Trận & Đề Thi Tiểu Học GDPT 2018</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-inner">
+            <div class="logo-area">
+                <h1>
+                    <span>TH_ExamGen Web</span>
+                    <span class="logo-badge">Trực Tuyến</span>
+                </h1>
+                <div class="subtitle">Hệ thống sinh ma trận, bản đặc tả & đề thi Tiểu học chuẩn GDPT 2018 (Kết nối tri thức)</div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary btn-sm" onclick="openSettingsModal()">⚙ Cấu hình trường & API</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main App Container -->
+    <main class="main-container">
+        
+        <!-- Tab Navigation -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" id="tabVietBtn" onclick="switchTab('viet')">
+                📚 Môn Tiếng Việt
+            </button>
+            <button class="tab-btn" id="tabMathBtn" onclick="switchTab('math')">
+                📐 Môn Toán
+            </button>
+        </nav>
+
+        <!-- ================= TAB TIẾNG VIỆT ================= -->
+        <div id="tabViet" class="tab-content">
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="form-group">
+                    <label>Khối lớp:</label>
+                    <select id="vietGradeSelect" onchange="loadVietCurriculum()">
+                        <option value="4">Khối 4</option>
+                        <option value="5" selected>Khối 5</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Kỳ kiểm tra:</label>
+                    <select id="vietPeriodSelect" onchange="loadVietCurriculum()">
+                        <option value="Giữa Học kỳ I">Giữa Học kỳ I</option>
+                        <option value="Cuối Học kỳ I">Cuối Học kỳ I</option>
+                        <option value="Giữa Học kỳ II">Giữa Học kỳ II</option>
+                        <option value="Cuối Học kỳ II" selected>Cuối Học kỳ II</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-left: auto;">
+                    <button class="btn btn-secondary btn-sm" onclick="loadVietCurriculum()">🔄 Nạp lại chuẩn</button>
+                    <button class="btn btn-outline btn-sm" onclick="auditVietMatrix()">🔍 AI Rà soát ma trận</button>
+                    <button class="btn btn-success btn-sm" onclick="exportVietMatrix()">📥 Tải Word Ma trận & Đặc tả (.docx)</button>
+                </div>
+            </div>
+
+            <!-- Bước 1: Ma trận & Đặc tả -->
+            <div class="card">
+                <div class="card-title">
+                    <span>Bước 1: Ma trận & Bản đặc tả Tiếng Việt</span>
+                    <span style="font-size: 0.8rem; font-weight: normal; color: var(--gray-600);">(Có thể nhấn trực tiếp vào ô để sửa nội dung & điểm)</span>
+                </div>
+
+                <!-- Thống kê điểm số -->
+                <div class="summary-bar" id="vietSummaryBar">
+                    <div class="summary-item">Tổng điểm: <strong id="vTotalPoints">10.0đ</strong></div>
+                    <div class="summary-item">Đọc hiểu: <strong id="vReadingPoints">6.0đ</strong></div>
+                    <div class="summary-item">Viết: <strong id="vWritingPoints">4.0đ</strong></div>
+                    <div class="summary-item">M1/M2/M3: <strong id="vLevelsRatio">5.0 / 3.0 / 2.0</strong></div>
+                    <div class="summary-item">Trắc nghiệm / Tự luận: <strong id="vTypeRatio">4.0đ / 6.0đ</strong></div>
+                </div>
+
+                <!-- Bảng ma trận -->
+                <div class="table-responsive">
+                    <table class="matrix-table" id="vietMatrixTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px; text-align: center;">STT</th>
+                                <th style="width: 140px;">Mạch kiến thức</th>
+                                <th style="width: 180px;">Nội dung kiến thức</th>
+                                <th>Yêu cầu cần đạt</th>
+                                <th style="width: 60px; text-align: center;">Mức độ</th>
+                                <th style="width: 60px; text-align: center;">Hình thức</th>
+                                <th style="width: 60px; text-align: center;">Điểm</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vietMatrixBody">
+                            <!-- Rows rendered via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Bước 2: Ngữ liệu bài đọc -->
+            <div class="card">
+                <div class="card-title">Bước 2: Ngữ liệu bài đọc hiểu</div>
+                <div style="display: flex; gap: 20px; margin-bottom: 12px;">
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <input type="radio" name="vietPassageMode" value="ai" checked onchange="toggleVietPassageMode()">
+                        <strong>AI tự sinh bài đọc theo chủ điểm SGK Kết nối tri thức</strong>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <input type="radio" name="vietPassageMode" value="custom" onchange="toggleVietPassageMode()">
+                        <strong>Giáo viên tự nhập bài đọc</strong>
+                    </label>
+                </div>
+
+                <!-- AI Theme Mode -->
+                <div id="vietAiThemePnl" style="background: var(--gray-50); padding: 12px; border-radius: 6px; border: 1px solid var(--gray-200);">
+                    <div class="field" style="margin-bottom: 0;">
+                        <label>Chủ điểm bài đọc chuẩn KNTT theo kỳ:</label>
+                        <select id="vietThemeSelect" onchange="onVietThemeSelected()" style="max-width: 500px; margin-bottom: 8px;"></select>
+                        <input type="text" id="vietThemeCustomInput" placeholder="Hoặc nhập chủ đề bài đọc..." style="width: 100%; max-width: 500px;">
+                    </div>
+                </div>
+
+                <!-- Custom Passage Mode -->
+                <div id="vietCustomPassagePnl" style="display: none; background: var(--gray-50); padding: 12px; border-radius: 6px; border: 1px solid var(--gray-200);">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                        <div>
+                            <label style="font-size: 0.85rem; font-weight: 600;">Tiêu đề bài đọc:</label>
+                            <input type="text" id="customPassageTitle" placeholder="Ví dụ: Cây bàng quê hương">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.85rem; font-weight: 600;">Tác giả:</label>
+                            <input type="text" id="customPassageAuthor" placeholder="Ví dụ: Theo Nguyễn Nhật Ánh">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.85rem; font-weight: 600;">Nguồn trích:</label>
+                            <input type="text" id="customPassageSource" placeholder="Nguồn báo / sách...">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 600;">Nội dung bài đọc:</label>
+                        <textarea id="customPassageContent" rows="6" placeholder="Dán nội dung đoạn văn bài đọc vào đây..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bước 3: Tạo đề thi & Xem trước -->
+            <div class="card">
+                <div class="card-title">
+                    <span>Bước 3: Tạo đề thi & Hướng dẫn chấm</span>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="generateVietExam()">✨ BẮT ĐẦU TẠO ĐỀ THI BẰNG AI</button>
+                        <button class="btn btn-outline" id="btnExportVietExam" disabled onclick="exportVietExamOnly()">📥 Xuất Đề thi (.docx)</button>
+                        <button class="btn btn-success" id="btnExportVietFull" disabled onclick="exportVietFullPackage()">📥 Xuất Trọn bộ Đề + Đáp án (.docx)</button>
+                    </div>
+                </div>
+
+                <div id="vietPreviewArea">
+                    <p style="color: var(--gray-600); font-style: italic; text-align: center; padding: 2rem;">Chưa có dữ liệu đề thi. Nhấn "Bắt đầu tạo đề thi bằng AI" để hệ thống tạo đề theo ma trận.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB TOÁN ================= -->
+        <div id="tabMath" class="tab-content" style="display: none;">
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="form-group">
+                    <label>Khối lớp:</label>
+                    <select id="mathGradeSelect" onchange="loadMathCurriculum()">
+                        <option value="4">Khối 4</option>
+                        <option value="5" selected>Khối 5</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Kỳ kiểm tra:</label>
+                    <select id="mathPeriodSelect" onchange="loadMathCurriculum()">
+                        <option value="Giữa Học kỳ I">Giữa Học kỳ I</option>
+                        <option value="Cuối Học kỳ I">Cuối Học kỳ I</option>
+                        <option value="Giữa Học kỳ II">Giữa Học kỳ II</option>
+                        <option value="Cuối Học kỳ II" selected>Cuối Học kỳ II</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-left: auto;">
+                    <button class="btn btn-secondary btn-sm" onclick="loadMathCurriculum()">🔄 Nạp lại chuẩn</button>
+                    <button class="btn btn-outline btn-sm" onclick="auditMathMatrix()">🔍 AI Rà soát ma trận</button>
+                    <button class="btn btn-success btn-sm" onclick="exportMathMatrix()">📥 Tải Word Ma trận & Đặc tả Toán (.docx)</button>
+                </div>
+            </div>
+
+            <!-- Bước 1: Ma trận Toán -->
+            <div class="card">
+                <div class="card-title">
+                    <span>Bước 1: Ma trận & Bản đặc tả môn Toán</span>
+                    <span style="font-size: 0.8rem; font-weight: normal; color: var(--gray-600);">(Có thể sửa trực tiếp trên bảng)</span>
+                </div>
+
+                <div class="summary-bar" id="mathSummaryBar">
+                    <div class="summary-item">Tổng điểm: <strong id="mTotalPoints">10.0đ</strong></div>
+                    <div class="summary-item">M1/M2/M3: <strong id="mLevelsRatio">5.0 / 3.0 / 2.0</strong></div>
+                    <div class="summary-item">Trắc nghiệm / Tự luận: <strong id="mTypeRatio">6.0đ / 4.0đ</strong></div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="matrix-table" id="mathMatrixTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px; text-align: center;">STT</th>
+                                <th style="width: 150px;">Chủ đề</th>
+                                <th style="width: 200px;">Nội dung kiến thức</th>
+                                <th>Yêu cầu cần đạt</th>
+                                <th style="width: 60px; text-align: center;">Mức độ</th>
+                                <th style="width: 60px; text-align: center;">Hình thức</th>
+                                <th style="width: 60px; text-align: center;">Điểm</th>
+                                <th style="width: 70px; text-align: center;">Hình vẽ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mathMatrixBody">
+                            <!-- Rows rendered via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Bước 2 & 3: Tạo đề thi Toán -->
+            <div class="card">
+                <div class="card-title">
+                    <span>Bước 2 & 3: Tạo đề thi môn Toán & Hướng dẫn chấm</span>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="generateMathExam()">✨ BẮT ĐẦU TẠO ĐỀ THI TOÁN BẰNG AI</button>
+                        <button class="btn btn-outline" id="btnExportMathExam" disabled onclick="exportMathExamOnly()">📥 Xuất Đề thi (.docx)</button>
+                        <button class="btn btn-success" id="btnExportMathFull" disabled onclick="exportMathFullPackage()">📥 Xuất Trọn bộ Đề + Đáp án (.docx)</button>
+                    </div>
+                </div>
+
+                <div id="mathPreviewArea">
+                    <p style="color: var(--gray-600); font-style: italic; text-align: center; padding: 2rem;">Chưa có dữ liệu đề thi. Nhấn "Bắt đầu tạo đề thi Toán bằng AI" để tạo câu hỏi và đáp án chi tiết.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal Cấu hình -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="font-size: 1.15rem; font-weight: 700;">Cấu hình hệ thống & Khóa AI</h3>
+                <button class="modal-close" onclick="closeSettingsModal()">&times;</button>
+            </div>
+            <div>
+                <div class="field">
+                    <label>Ủy ban Nhân dân / Phòng GD&ĐT:</label>
+                    <input type="text" id="cfgUbnd" placeholder="ỦY BAN NHÂN DÂN XÃ MƯỜNG LA">
+                </div>
+                <div class="field">
+                    <label>Tên trường:</label>
+                    <input type="text" id="cfgTruong" placeholder="TRƯỜNG TIỂU HỌC ÍT ONG">
+                </div>
+                <div class="field">
+                    <label>Năm học:</label>
+                    <input type="text" id="cfgNamHoc" placeholder="2025 - 2026">
+                </div>
+                <div class="field">
+                    <label>Nhà cung cấp AI:</label>
+                    <select id="cfgAiProvider">
+                        <option value="Gemini">Google Gemini</option>
+                        <option value="DeepSeek">DeepSeek AI</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Gemini API Key:</label>
+                    <input type="password" id="cfgGeminiKey" placeholder="Để trống nếu máy chủ Render đã cấu hình">
+                    <div class="field-hint">Khóa API sẽ được dùng để gọi AI sinh ma trận và đề thi.</div>
+                </div>
+                <div class="field">
+                    <label>DeepSeek API Key (Tùy chọn):</label>
+                    <input type="password" id="cfgDeepSeekKey" placeholder="sk-...">
+                </div>
+                <div style="text-align: right; margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 8px;">
+                    <button class="btn btn-secondary" onclick="closeSettingsModal()">Hủy</button>
+                    <button class="btn btn-primary" onclick="saveSettings()">Lưu Cấu Hình</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div id="loadingText" style="font-size: 1rem; font-weight: 600;">Đang xử lý, vui lòng chờ...</div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{32BF2459-C315-4166-8AF2-162B545709B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TH_ExamGen.Core", "src\TH_ExamGen.Core\TH_ExamGen.Core.csproj", "{33F5B252-A238-45B4-968F-1F266A05251A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TH_ExamGen.Services", "src\TH_ExamGen.Services\TH_ExamGen.Services.csproj", "{A554735A-3F58-44E8-9B5C-6DA3C1ED1B81}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TH_ExamGen.UI", "src\TH_ExamGen.UI\TH_ExamGen.UI.csproj", "{E3421504-B43A-4F51-9852-CC40CBD8860A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{F44D734C-86AF-4C02-86B6-86C89B6CAAA5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TH_ExamGen.Keygen", "tools\TH_ExamGen.Keygen\TH_ExamGen.Keygen.csproj", "{5FD007EF-1FA1-4C32-A496-38B2FBD5264B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TH_ExamGen.WebAPI", "src\TH_ExamGen.WebAPI\TH_ExamGen.WebAPI.csproj", "{87F34837-DD11-4140-850D-25ABD247AE2F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{33F5B252-A238-45B4-968F-1F266A05251A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33F5B252-A238-45B4-968F-1F266A05251A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33F5B252-A238-45B4-968F-1F266A05251A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33F5B252-A238-45B4-968F-1F266A05251A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A554735A-3F58-44E8-9B5C-6DA3C1ED1B81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A554735A-3F58-44E8-9B5C-6DA3C1ED1B81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A554735A-3F58-44E8-9B5C-6DA3C1ED1B81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A554735A-3F58-44E8-9B5C-6DA3C1ED1B81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3421504-B43A-4F51-9852-CC40CBD8860A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3421504-B43A-4F51-9852-CC40CBD8860A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3421504-B43A-4F51-9852-CC40CBD8860A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3421504-B43A-4F51-9852-CC40CBD8860A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FD007EF-1FA1-4C32-A496-38B2FBD5264B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FD007EF-1FA1-4C32-A496-38B2FBD5264B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FD007EF-1FA1-4C32-A496-38B2FBD5264B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FD007EF-1FA1-4C32-A496-38B2FBD5264B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87F34837-DD11-4140-850D-25ABD247AE2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87F34837-DD11-4140-850D-25ABD247AE2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87F34837-DD11-4140-850D-25ABD247AE2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87F34837-DD11-4140-850D-25ABD247AE2F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{33F5B252-A238-45B4-968F-1F266A05251A} = {32BF2459-C315-4166-8AF2-162B545709B8}
+		{A554735A-3F58-44E8-9B5C-6DA3C1ED1B81} = {32BF2459-C315-4166-8AF2-162B545709B8}
+		{E3421504-B43A-4F51-9852-CC40CBD8860A} = {32BF2459-C315-4166-8AF2-162B545709B8}
+		{5FD007EF-1FA1-4C32-A496-38B2FBD5264B} = {F44D734C-86AF-4C02-86B6-86C89B6CAAA5}
+		{87F34837-DD11-4140-850D-25ABD247AE2F} = {32BF2459-C315-4166-8AF2-162B545709B8}
+	EndGlobalSection
+EndGlobal

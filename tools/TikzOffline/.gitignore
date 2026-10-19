@@ -1,0 +1,4 @@
+# Bo MiKTeX offline duoc TAO RA (nang ~1 GB) - khong dua vao git.
+bundle/
+.cache/
+test-output/

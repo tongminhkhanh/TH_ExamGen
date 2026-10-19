@@ -1,0 +1,11 @@
+# Build results
+**/[Bb]in/
+**/[Oo]bj/
+publish/
+*.zip
+*.user
+*.suo
+.vs/
+
+# Word test outputs
+test_*.docx

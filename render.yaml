@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: thexamgen-web
+    env: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: AI_PROVIDER
+        value: Gemini
+      - key: GEMINI_API_KEY
+        sync: false

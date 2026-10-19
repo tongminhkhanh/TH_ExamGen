@@ -1,0 +1,482 @@
+<UserControl x:Class="TH_ExamGen.UI.Views.VietModuleControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="780" d:DesignWidth="1020">
+    <Grid Margin="20,16,20,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ========================================================= -->
+        <!-- 1. MODERN 3-STEP WORKFLOW STEPPER                         -->
+        <!-- ========================================================= -->
+        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="8" BorderBrush="#E2E8F0" BorderThickness="1" Margin="0,0,0,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- STEP 1 -->
+                <Border x:Name="StepViet1Border" Grid.Column="0" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1.5" CornerRadius="8" Padding="14,10" Cursor="Hand" MouseLeftButtonUp="StepViet1_Click">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border x:Name="StepViet1Badge" Width="30" Height="30" CornerRadius="15" Background="#4F46E5" VerticalAlignment="Center" Margin="0,0,12,0">
+                            <TextBlock Text="1" Foreground="White" FontWeight="Bold" FontSize="13.5" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock x:Name="StepViet1Sub" Text="BƯỚC 1" FontSize="11" FontWeight="Bold" Foreground="#4F46E5"/>
+                            <TextBlock x:Name="StepViet1Title" Text="Ngữ liệu &amp; Bản đặc tả" FontSize="14" FontWeight="SemiBold" Foreground="#0F172A"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- CONNECTOR 1 -->
+                <Path Grid.Column="1" Data="{StaticResource GeoChevronRight}" Stroke="#94A3B8" StrokeThickness="2" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" Margin="8,0"/>
+
+                <!-- STEP 2 -->
+                <Border x:Name="StepViet2Border" Grid.Column="2" Background="Transparent" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="14,10" Cursor="Hand" MouseLeftButtonUp="StepViet2_Click">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border x:Name="StepViet2Badge" Width="30" Height="30" CornerRadius="15" Background="#F1F5F9" VerticalAlignment="Center" Margin="0,0,12,0">
+                            <TextBlock Text="2" Foreground="#64748B" FontWeight="Bold" FontSize="13.5" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock x:Name="StepViet2Sub" Text="BƯỚC 2" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
+                            <TextBlock x:Name="StepViet2Title" Text="Sinh đề AI &amp; Xem trước" FontSize="14" FontWeight="SemiBold" Foreground="#475569"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- CONNECTOR 2 -->
+                <Path Grid.Column="3" Data="{StaticResource GeoChevronRight}" Stroke="#94A3B8" StrokeThickness="2" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" Margin="8,0"/>
+
+                <!-- STEP 3 -->
+                <Border x:Name="StepViet3Border" Grid.Column="4" Background="Transparent" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="14,10" Cursor="Hand" MouseLeftButtonUp="StepViet3_Click">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border x:Name="StepViet3Badge" Width="30" Height="30" CornerRadius="15" Background="#F1F5F9" VerticalAlignment="Center" Margin="0,0,12,0">
+                            <TextBlock Text="3" Foreground="#64748B" FontWeight="Bold" FontSize="13.5" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock x:Name="StepViet3Sub" Text="BƯỚC 3" FontSize="11" FontWeight="Bold" Foreground="#64748B"/>
+                            <TextBlock x:Name="StepViet3Title" Text="Xuất hồ sơ Word (.docx)" FontSize="14" FontWeight="SemiBold" Foreground="#475569"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ========================================================= -->
+        <!-- 2. MAIN WORKFLOW CONTAINER                                -->
+        <!-- ========================================================= -->
+        <TabControl x:Name="TabViet" Grid.Row="1" BorderThickness="0" Background="Transparent" SelectionChanged="TabViet_SelectionChanged">
+            <TabControl.ItemContainerStyle>
+                <Style TargetType="TabItem">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </Style>
+            </TabControl.ItemContainerStyle>
+
+            <!-- TAB 1: NGỮ LIỆU & MA TRẬN -->
+            <TabItem Header="Step1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Passage Selection Options -->
+                    <Border Grid.Row="0" Background="White" CornerRadius="10" Padding="16,12" BorderBrush="#E2E8F0" BorderThickness="1" Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="NGUỒN NGỮ LIỆU BÀI ĐỌC HIỂU (VĂN BẢN ĐỌC THẦM)" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E" Margin="0,0,0,10"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <RadioButton x:Name="RbAiGeneratePassage" Content="Để Gemini AI tự sáng tác bài đọc theo chủ đề" 
+                                             IsChecked="True" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,24,0" Checked="RbPassageSource_Checked"/>
+                                <RadioButton x:Name="RbCustomPassage" Content="Tự nhập / dán văn bản bài đọc có sẵn" 
+                                             FontWeight="SemiBold" Foreground="#334155" Checked="RbPassageSource_Checked"/>
+                            </StackPanel>
+
+                            <!-- AI Theme panel -->
+                            <StackPanel x:Name="PnlAiTheme" Orientation="Horizontal">
+                                <TextBlock Text="Chủ đề bài đọc:" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,10,0"/>
+                                <TextBox x:Name="TxtPassageTheme" Width="400" Padding="8,6" FontSize="13"
+                                         Text="Bảo vệ môi trường, tình yêu thiên nhiên đất nước" BorderBrush="#CBD5E1" Background="#F8FAFC"/>
+                                <TextBlock Text="(Chuẩn GDPT 2018: Lớp 4 khoảng 280-350 chữ, Lớp 5 khoảng 350-450 chữ)" 
+                                           VerticalAlignment="Center" FontStyle="Italic" FontSize="11" Foreground="#0284C7" Margin="10,0,0,0"/>
+                            </StackPanel>
+
+                            <!-- Custom Passage panel -->
+                            <StackPanel x:Name="PnlCustomPassage" Visibility="Collapsed" Margin="0,6,0,0">
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Tiêu đề bài đọc:" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                                        <TextBox x:Name="TxtCustomTitle" Padding="8,6" FontSize="13" Text="Người đi săn và con nai" BorderBrush="#CBD5E1" Background="#F8FAFC"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Tác giả / Nguồn trích:" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                                        <TextBox x:Name="TxtCustomAuthor" Padding="8,6" FontSize="13" Text="Chế Lan Viên" BorderBrush="#CBD5E1" Background="#F8FAFC"/>
+                                    </StackPanel>
+                                </Grid>
+                                <StackPanel Margin="0,0,0,8">
+                                    <TextBlock Text="Nguồn bài đọc / đường dẫn (nếu có):" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                                    <TextBox x:Name="TxtCustomSource" Padding="8,6" FontSize="13" BorderBrush="#CBD5E1" Background="#F8FAFC"/>
+                                </StackPanel>
+                                <TextBlock Text="Nội dung bài đọc (Chuẩn GDPT 2018: Lớp 4 khoảng 280 - 350 tiếng, Lớp 5 khoảng 350 - 450 tiếng):" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtCustomContent" Height="100" TextWrapping="Wrap" AcceptsReturn="True" 
+                                         VerticalScrollBarVisibility="Auto" Padding="8" FontSize="13" BorderBrush="#CBD5E1" Background="#F8FAFC"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Top Action Bar for Matrix (2 Hàng thông thoáng, không bị che nút) -->
+                    <Border Grid.Row="1" Background="White" CornerRadius="10" Padding="16,12" BorderBrush="#E2E8F0" BorderThickness="1" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Hàng 1: Bộ lọc Chuẩn & Thao tác bảng -->
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Khối lớp & Đợt thi & Nạp chuẩn -->
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="Khối:" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,6,0"/>
+                                    <ComboBox x:Name="CboGradeViet" Width="90" Padding="6,5" VerticalContentAlignment="Center" Margin="0,0,12,0" SelectionChanged="CboGradeOrPeriodViet_SelectionChanged">
+                                        <ComboBoxItem Content="Khối 4" IsSelected="True"/>
+                                        <ComboBoxItem Content="Khối 5"/>
+                                    </ComboBox>
+
+                                    <TextBlock Text="Đợt thi:" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,6,0"/>
+                                    <ComboBox x:Name="CboPeriodViet" Width="145" Padding="6,5" VerticalContentAlignment="Center" Margin="0,0,12,0" SelectionChanged="CboGradeOrPeriodViet_SelectionChanged">
+                                        <ComboBoxItem Content="Giữa Học kỳ I"/>
+                                        <ComboBoxItem Content="Cuối Học kỳ I"/>
+                                        <ComboBoxItem Content="Giữa Học kỳ II"/>
+                                        <ComboBoxItem Content="Cuối Học kỳ II" IsSelected="True"/>
+                                    </ComboBox>
+
+                                    <Button x:Name="BtnLoadDefaultVietMatrix" Style="{StaticResource StitchSecondaryButton}" Click="BtnLoadDefaultVietMatrix_Click" Margin="0,0,8,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Path Data="{StaticResource GeoRefresh}" Stroke="#475569" StrokeThickness="1.8" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <TextBlock Text="Nạp chuẩn BGD" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+
+                                <!-- Thêm dòng & Xóa dòng -->
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <Button x:Name="BtnAddRowViet" Style="{StaticResource StitchSecondaryButton}" Click="BtnAddRowViet_Click" Margin="0,0,8,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Path Data="{StaticResource GeoPlus}" Stroke="#475569" StrokeThickness="2" Width="13" Height="13" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <TextBlock Text="Thêm dòng" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button x:Name="BtnDeleteRowViet" Style="{StaticResource StitchDangerButton}" Click="BtnDeleteRowViet_Click">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Path Data="{StaticResource GeoTrash}" Stroke="#E11D48" StrokeThickness="1.8" Width="13" Height="13" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <TextBlock Text="Xóa dòng" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Hàng 2: Trợ lý AI & Thẩm định chuyên môn Thông tư 27 -->
+                            <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10,0,0">
+                                <Button x:Name="BtnAiSuggestVietMatrix" Style="{StaticResource StitchSuccessButton}" Click="BtnAiSuggestVietMatrix_Click" Margin="0,0,10,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="{StaticResource GeoSparkles}" Fill="White" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="AI Gợi ý ma trận" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button x:Name="BtnAuditVietMatrix" Style="{StaticResource StitchWarningButton}" Click="BtnAuditVietMatrix_Click" Margin="0,0,12,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="{StaticResource GeoAudit}" Stroke="#B45309" StrokeThickness="1.8" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Thẩm định TT27" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button x:Name="BtnRestorePreAiViet" Style="{StaticResource StitchSecondaryButton}" Click="BtnRestorePreAiViet_Click" Margin="0,0,12,0" IsEnabled="False"
+                                        ToolTip="Quay lại ma trận ngay trước lần AI gợi ý gần nhất (chỉ dùng được trong phiên làm việc hiện tại)">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="{StaticResource GeoRefresh}" Stroke="#475569" StrokeThickness="1.8" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Khôi phục bản trước AI" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </Button>
+                                <ProgressBar x:Name="PbVietMatrixLoading" IsIndeterminate="True" Width="110" Height="8" Margin="0,0,12,0" VerticalAlignment="Center" Visibility="Collapsed"/>
+                                <TextBlock Text="Trợ lý AI tự động rà soát ma trận đặc tả theo chuẩn Chương trình GDPT 2018 &amp; Thông tư 27" 
+                                           VerticalAlignment="Center" Foreground="#94A3B8" FontSize="12" FontStyle="Italic"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- DataGrid Ma Trận -->
+                    <Border Grid.Row="2" Background="White" CornerRadius="10" BorderBrush="#E2E8F0" BorderThickness="1">
+                        <DataGrid x:Name="DgVietMatrix" AutoGenerateColumns="False" CanUserAddRows="False" 
+                                  HeadersVisibility="Column" GridLinesVisibility="All" AlternationCount="2"
+                                  BorderThickness="0" SelectionMode="Single" FontSize="13" RowHeight="34"
+                                  CellEditEnding="DgVietMatrix_CellEditEnding">
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow">
+                                    <Setter Property="Background" Value="White"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="AlternationIndex" Value="1">
+                                            <Setter Property="Background" Value="#F8FAFC"/>
+                                        </Trigger>
+                                        <!-- Dòng do AI vừa tạo, chưa rà soát: tô vàng; khi thầy/cô sửa dòng, màu tự bỏ -->
+                                        <DataTrigger Binding="{Binding IsAiNew}" Value="True">
+                                            <Setter Property="Background" Value="#FFF9C4"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="STT" Binding="{Binding SoThuTu}" Width="50"/>
+                                <DataGridTextColumn Header="Mạch kiến thức" Binding="{Binding MachKienThuc}" Width="160"/>
+                                <DataGridTextColumn Header="Nội dung kiến thức" Binding="{Binding NoiDungKienThuc}" Width="190"/>
+                                <DataGridTextColumn Header="Yêu cầu cần đạt" Binding="{Binding YeuCauCanDat}" Width="*"/>
+                                <DataGridTextColumn Header="Mức" Binding="{Binding MucDo}" Width="70"/>
+                                <DataGridTextColumn Header="Dạng" Binding="{Binding HinhThuc}" Width="70"/>
+                                <DataGridTextColumn Header="Điểm" Binding="{Binding Diem, StringFormat={}{0:0.#}đ}" Width="70"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+
+                    <!-- Bottom Bar -->
+                    <Border Grid.Row="3" Background="White" CornerRadius="10" Padding="18,14" BorderBrush="#E2E8F0" BorderThickness="1" Margin="0,12,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,0">
+                                <TextBlock Text="Tổng phân bổ: " Foreground="#64748B" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtVietSummary" Text="11 câu | 8,0 điểm (+ 2,0 điểm đọc thành tiếng = 10,0 điểm)" 
+                                           FontWeight="Bold" Foreground="#0F172A" FontSize="13" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnExportVietMatrixOnly" Style="{StaticResource StitchSecondaryButton}" Click="BtnExportVietMatrixOnly_Click" Margin="0,0,10,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="{StaticResource GeoWord}" Stroke="#4F46E5" StrokeThickness="1.8" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Xuất Ma Trận (.docx)" FontWeight="Bold" Foreground="#4F46E5"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button x:Name="BtnGoToVietStep2" Style="{StaticResource StitchPrimaryButton}" Click="BtnGoToVietStep2_Click">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Tiếp tục sang Bước 2" FontWeight="Bold"/>
+                                        <Path Data="{StaticResource GeoChevronRight}" Stroke="White" StrokeThickness="2" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- TAB 2: SINH ĐỀ AI & XEM TRƯỚC -->
+            <TabItem Header="Step2">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Top Bar -->
+                    <Border Grid.Row="0" Background="White" CornerRadius="10" Padding="16,12" BorderBrush="#E2E8F0" BorderThickness="1" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button x:Name="BtnGenerateVietExam" Grid.Column="0" Style="{StaticResource StitchSuccessButton}" VerticalAlignment="Center" Click="BtnGenerateVietExam_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource GeoSparkles}" Fill="White" Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Bắt đầu Sinh Đề Tiếng Việt bằng Gemini AI" FontWeight="Bold" FontSize="13.5"/>
+                                </StackPanel>
+                            </Button>
+                            <Button x:Name="BtnRewriteVietGuide" Grid.Column="1" Style="{StaticResource StitchWarningButton}" Margin="10,0,0,0" VerticalAlignment="Center" Click="BtnRewriteVietGuide_Click"
+                                    ToolTip="Giữ nguyên đề hiện có, chỉ nhờ AI viết lại Hướng dẫn chấm chi tiết (Đáp án gợi ý + Biểu điểm từng câu) để giáo viên chấm được ngay">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource GeoAudit}" Stroke="#B45309" StrokeThickness="1.8" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Viết lại Hướng dẫn chấm (AI)" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Button>
+                            <ProgressBar x:Name="PbVietLoading" Grid.Column="2" IsIndeterminate="True" Width="140" Height="8" Margin="20,0,0,0" VerticalAlignment="Center" Visibility="Collapsed"/>
+                            <Button x:Name="BtnCancelVietGenerate" Grid.Column="3" Style="{StaticResource StitchSecondaryButton}" Margin="10,0,0,0" VerticalAlignment="Center" Visibility="Collapsed" Click="BtnCancelVietGenerate_Click"
+                                    ToolTip="Dừng quá trình sinh đề đang chạy">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="✖" FontSize="12" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#DC2626"/>
+                                    <TextBlock Text="Hủy" FontWeight="SemiBold" Foreground="#DC2626"/>
+                                </StackPanel>
+                            </Button>
+                            <TextBlock x:Name="TxtVietAiStatus" Grid.Column="4" Text="Sẵn sàng gửi Ma trận và Ngữ liệu lên Gemini AI..."
+                                       VerticalAlignment="Center" Margin="14,0,0,0" Foreground="#475569" FontStyle="Italic" TextTrimming="CharacterEllipsis"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Content Viewer -->
+                    <Border Grid.Row="1" Background="White" CornerRadius="10" BorderBrush="#E2E8F0" BorderThickness="1" Padding="16">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel x:Name="PnlVietPreview">
+                                <TextBlock x:Name="TxtVietEmptyNotice" Text="Chưa có nội dung. Hãy bấm nút 'Bắt đầu Sinh Đề Tiếng Việt bằng Gemini AI' ở trên." 
+                                           FontSize="14" Foreground="#94A3B8" HorizontalAlignment="Center" Margin="0,60,0,0"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Bottom Bar -->
+                    <Border Grid.Row="2" Background="White" CornerRadius="10" Padding="16,12" BorderBrush="#E2E8F0" BorderThickness="1" Margin="0,12,0,0">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <Button x:Name="BtnSaveVietDraft" Style="{StaticResource StitchSecondaryButton}" Click="BtnSaveVietDraft_Click" Margin="0,0,8,0"
+                                        ToolTip="Lưu toàn bộ ma trận, ngữ liệu và đề hiện tại ra một tệp để mở lại sau">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="{StaticResource GeoSave}" Stroke="#4F46E5" StrokeThickness="1.8" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Lưu đề" FontWeight="SemiBold" Foreground="#4F46E5"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button x:Name="BtnOpenVietDraft" Style="{StaticResource StitchSecondaryButton}" Click="BtnOpenVietDraft_Click" Margin="0,0,8,0"
+                                        ToolTip="Mở lại một đề Tiếng Việt đã lưu trước đó">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="{StaticResource GeoFolder}" Stroke="#4F46E5" StrokeThickness="1.8" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Mở đề" FontWeight="SemiBold" Foreground="#4F46E5"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button x:Name="BtnNewVietExam" Style="{StaticResource StitchSecondaryButton}" Click="BtnNewVietExam_Click"
+                                        ToolTip="Bỏ đề hiện tại và quay về ma trận mặc định">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="{StaticResource GeoPlus}" Stroke="#4F46E5" StrokeThickness="1.8" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Đề mới" FontWeight="SemiBold" Foreground="#4F46E5"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                            <Button x:Name="BtnGoToVietStep3" Style="{StaticResource StitchPrimaryButton}" HorizontalAlignment="Right" Click="BtnGoToVietStep3_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Tiếp tục sang Bước 3 (Xuất Word)" FontWeight="Bold"/>
+                                    <Path Data="{StaticResource GeoChevronRight}" Stroke="White" StrokeThickness="2" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- TAB 3: XUẤT FILE WORD -->
+            <TabItem Header="Step3">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <Grid Margin="0,0,0,20">
+                        <StackPanel MaxWidth="860" HorizontalAlignment="Left">
+                            <!-- Hero Title -->
+                            <TextBlock Text="XUẤT HỒ SƠ ĐỀ KIỂM TRA MÔN TIẾNG VIỆT" FontSize="18" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,4"/>
+                            <TextBlock Text="Đề thi chính thức kèm khung đọc thầm đóng hộp chữ nhật trang trọng, 11 câu hỏi và lưới kẻ ô ly chuẩn tiểu học dưới các câu tự luận." 
+                                       FontSize="13" Foreground="#64748B" Margin="0,0,0,16"/>
+
+                            <!-- Tùy chọn kiểu xuất -->
+                            <Border Background="White" CornerRadius="10" BorderBrush="#E2E8F0" BorderThickness="1" Padding="18,14" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <TextBlock Text="CHỌN KIỂU XUẤT FILE" FontWeight="Bold" FontSize="13" Foreground="#4F46E5" Margin="0,0,0,10"/>
+                                    <RadioButton x:Name="RbExportVietExamOnly" Content="Chỉ xuất Đề thi chính thức &amp; Hướng dẫn chấm (Chuẩn in phát học sinh làm bài)" 
+                                                 IsChecked="True" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,8"/>
+                                    <RadioButton x:Name="RbExportVietFullPackage" Content="Xuất trọn bộ Hồ sơ (Gồm cả Ma trận 2 tầng + Bản đặc tả + Đề thi + Hướng dẫn chấm)" 
+                                                 FontWeight="SemiBold" Foreground="#334155"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Checklist Card -->
+                            <Border Background="White" CornerRadius="10" BorderBrush="#E2E8F0" BorderThickness="1" Padding="18,14" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <TextBlock Text="CÁC ĐỊNH DẠNG TỰ ĐỘNG ĐẠT CHUẨN ĐỀ MẪU 100%" FontSize="13" FontWeight="Bold" Foreground="#16A34A" Margin="0,0,0,8"/>
+                                    <TextBlock Text="• Khung điểm 2 ô chuẩn: Ô Điểm &amp; Ô Lời nhận xét của giáo viên (kèm 3 dòng chấm)." Margin="0,2" Foreground="#334155"/>
+                                    <TextBlock Text="• Phần I: Kiểm tra đọc thành tiếng (2 điểm) - Tốc độ đọc 105-110 tiếng/phút." Margin="0,2" Foreground="#334155"/>
+                                    <TextBlock Text="• Phần II: Văn bản đọc thầm đóng khung hộp chữ nhật trang trọng chuẩn mẫu." Margin="0,2" Foreground="#334155"/>
+                                    <TextBlock Text="• Tự động kẻ bảng lưới ô ly chuẩn (15-20 hàng x 18 cột) dưới các câu Tự luận 5, 6, 7, 10, 11." Margin="0,2" Foreground="#334155"/>
+                                    <TextBlock Text="• Hướng dẫn chấm: Bảng đáp án trắc nghiệm 3 dòng và barem biểu điểm chi tiết từng câu." Margin="0,2" Foreground="#334155"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Export Studio Box -->
+                            <Border Background="White" CornerRadius="10" BorderBrush="#E2E8F0" BorderThickness="1" Padding="18,16" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Tên tệp xuất (.docx):" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,6"/>
+                                    <TextBox x:Name="TxtExportVietFileName" FontSize="14" Padding="10,8" Margin="0,0,0,10"
+                                             Text="De_Kiem_Tra_TiengViet_Lop_4.docx" BorderBrush="#CBD5E1" Background="#F8FAFC"/>
+
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock x:Name="TxtExportFolderHint" VerticalAlignment="Center" FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,0,10,0"/>
+                                        <Button x:Name="BtnChangeExportFolder" Grid.Column="1" Style="{StaticResource StitchSecondaryButton}" Click="BtnChangeExportFolder_Click"
+                                                ToolTip="Đổi nơi lưu file Word (áp dụng cho các lần xuất tiếp theo)">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Path Data="{StaticResource GeoFolder}" Stroke="#475569" StrokeThickness="1.8" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                <TextBlock Text="Đổi thư mục..." FontWeight="SemiBold"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+
+                                    <TextBlock x:Name="TxtPaperPoints" FontSize="12.5" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,14"/>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="BtnExportVietWord" Style="{StaticResource StitchPrimaryButton}" Click="BtnExportVietWord_Click">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Path Data="{StaticResource GeoWord}" Fill="White" Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <TextBlock Text="Xuất File Word (.docx) Ngay" FontWeight="Bold"/>
+                                            </StackPanel>
+                                        </Button>
+                                        <Button x:Name="BtnOpenVietFolder" Style="{StaticResource StitchSecondaryButton}" Margin="12,0,0,0" Visibility="Collapsed" Click="BtnOpenVietFolder_Click">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Path Data="{StaticResource GeoFolder}" Stroke="#475569" StrokeThickness="1.8" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                <TextBlock Text="Mở thư mục chứa file" FontWeight="SemiBold"/>
+                                            </StackPanel>
+                                        </Button>
+                                        <Button x:Name="BtnOpenVietFile" Style="{StaticResource StitchSuccessButton}" Margin="10,0,0,0" Visibility="Collapsed" Click="BtnOpenVietFile_Click">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Path Data="{StaticResource GeoFile}" Stroke="White" StrokeThickness="1.8" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                <TextBlock Text="Mở file Word" FontWeight="SemiBold"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+
+                                    <TextBlock x:Name="TxtExportVietStatus" Margin="0,12,0,0" FontWeight="SemiBold" Foreground="#16A34A"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

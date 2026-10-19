@@ -141,7 +141,67 @@ app.MapGet("/api/curriculum/math/matrix", (int grade, string period) =>
     });
 });
 
+app.MapGet("/api/curriculum/viet/ppct", (int grade, string period) =>
+{
+    grade = (grade == 5) ? 5 : 4;
+    period = string.IsNullOrWhiteSpace(period) ? "Cuối Học kỳ II" : period;
+    var topics = VietTopicCatalog.GetTopics(grade, period);
+    return Results.Ok(new { grade, period, topics });
+});
+
+app.MapGet("/api/curriculum/math/ppct", (int grade, string period) =>
+{
+    grade = (grade == 5) ? 5 : 4;
+    period = string.IsNullOrWhiteSpace(period) ? "Cuối Học kỳ II" : period;
+    var topics = MathTopicCatalog.GetTopics(grade, period);
+    return Results.Ok(new { grade, period, topics });
+});
+
 // 4. AI Generator Endpoints
+app.MapPost("/api/ai/viet/suggest-matrix", async (SuggestMatrixDto req) =>
+{
+    try
+    {
+        var settings = GetEffectiveSettings(req.Settings);
+        var gemini = new GeminiService();
+        var suggestedItems = await gemini.SuggestVietMatrixAsync(
+            settings,
+            req.Grade,
+            req.Period,
+            req.Requirement ?? string.Empty,
+            req.AutoSelectTopics,
+            req.SelectedTopics
+        );
+        return Results.Ok(suggestedItems);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
+app.MapPost("/api/ai/math/suggest-matrix", async (SuggestMatrixDto req) =>
+{
+    try
+    {
+        var settings = GetEffectiveSettings(req.Settings);
+        var gemini = new GeminiService();
+        var suggestedItems = await gemini.SuggestMathMatrixAsync(
+            settings,
+            req.Grade,
+            req.Period,
+            req.Requirement ?? string.Empty,
+            req.AutoSelectTopics,
+            req.SelectedTopics
+        );
+        return Results.Ok(suggestedItems);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
 app.MapPost("/api/ai/viet/audit-matrix", async (AuditVietMatrixDto req) =>
 {
     try
@@ -412,5 +472,15 @@ public class ExportMathExamDto
 {
     public MathExamPaper Paper { get; set; } = new();
     public bool SkipValidation { get; set; } = false;
+    public AppSettings? Settings { get; set; }
+}
+
+public class SuggestMatrixDto
+{
+    public int Grade { get; set; } = 4;
+    public string Period { get; set; } = "Cuối Học kỳ II";
+    public string Requirement { get; set; } = string.Empty;
+    public bool AutoSelectTopics { get; set; } = true;
+    public List<string>? SelectedTopics { get; set; }
     public AppSettings? Settings { get; set; }
 }

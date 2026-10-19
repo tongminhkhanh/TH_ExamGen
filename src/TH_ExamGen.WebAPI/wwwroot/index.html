@@ -59,8 +59,10 @@
                 </div>
                 <div class="form-group" style="margin-left: auto;">
                     <button class="btn btn-secondary btn-sm" onclick="loadVietCurriculum()">🔄 Nạp lại chuẩn</button>
-                    <button class="btn btn-outline btn-sm" onclick="auditVietMatrix()">🔍 AI Rà soát ma trận</button>
-                    <button class="btn btn-success btn-sm" onclick="exportVietMatrix()">📥 Tải Word Ma trận & Đặc tả (.docx)</button>
+                    <button class="btn btn-outline btn-sm" onclick="openSuggestModal('viet')">✨ AI Gợi ý ma trận &amp; đặc tả</button>
+                    <button class="btn btn-secondary btn-sm" onclick="openPpctModal('viet')">📖 Xem PPCT Lớp 4-5</button>
+                    <button class="btn btn-outline btn-sm" onclick="auditVietMatrix()">🔍 AI Rà soát</button>
+                    <button class="btn btn-success btn-sm" onclick="exportVietMatrix()">📥 Tải Word (.docx)</button>
                 </div>
             </div>
 
@@ -186,8 +188,10 @@
                 </div>
                 <div class="form-group" style="margin-left: auto;">
                     <button class="btn btn-secondary btn-sm" onclick="loadMathCurriculum()">🔄 Nạp lại chuẩn</button>
-                    <button class="btn btn-outline btn-sm" onclick="auditMathMatrix()">🔍 AI Rà soát ma trận</button>
-                    <button class="btn btn-success btn-sm" onclick="exportMathMatrix()">📥 Tải Word Ma trận & Đặc tả Toán (.docx)</button>
+                    <button class="btn btn-outline btn-sm" onclick="openSuggestModal('math')">✨ AI Gợi ý ma trận &amp; đặc tả</button>
+                    <button class="btn btn-secondary btn-sm" onclick="openPpctModal('math')">📖 Xem PPCT Lớp 4-5</button>
+                    <button class="btn btn-outline btn-sm" onclick="auditMathMatrix()">🔍 AI Rà soát</button>
+                    <button class="btn btn-success btn-sm" onclick="exportMathMatrix()">📥 Tải Word (.docx)</button>
                 </div>
             </div>
 
@@ -292,6 +296,77 @@
                 <div style="text-align: right; margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 8px;">
                     <button class="btn btn-secondary" onclick="closeSettingsModal()">Hủy</button>
                     <button class="btn btn-primary" onclick="saveSettings()">Lưu Cấu Hình</button>
+                </div>
+            </div>
+        </div>
+    <!-- Modal Gợi ý Ma trận & Bản đặc tả theo PPCT -->
+    <div class="modal" id="suggestModal">
+        <div class="modal-content" style="max-width: 750px;">
+            <div class="modal-header">
+                <h3 id="suggestModalTitle" style="font-size: 1.15rem; font-weight: 700;">AI Gợi ý Ma trận &amp; Bản đặc tả</h3>
+                <button class="modal-close" onclick="closeSuggestModal()">&times;</button>
+            </div>
+            <div>
+                <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 0.85rem; color: #1e40af;">
+                    💡 Hệ thống tự động đối chiếu với <strong>Phân phối chương trình (PPCT) Chuẩn GDPT 2018 (SGK Kết nối tri thức)</strong>. AI sẽ chỉ lập ma trận và đặc tả bám sát đúng khối lớp và kỳ kiểm tra hiện tại.
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin-bottom: 6px;">
+                        <input type="radio" name="suggestMode" value="auto" checked onchange="toggleSuggestTopicSelection()">
+                        <strong>Chế độ 1: AI tự động phân bổ đều các mạch kiến thức theo PPCT</strong>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <input type="radio" name="suggestMode" value="manual" onchange="toggleSuggestTopicSelection()">
+                        <strong>Chế độ 2: Giáo viên tự tích chọn bài học / chủ điểm từ danh mục PPCT</strong>
+                    </label>
+                </div>
+
+                <!-- Checkbox list for manual selection -->
+                <div id="suggestTopicsContainer" style="display: none; max-height: 220px; overflow-y: auto; border: 1px solid var(--gray-300); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; background: #fafafa;">
+                    <div style="font-size: 0.8rem; color: var(--gray-600); margin-bottom: 6px;">Tích chọn các bài học / chủ điểm bạn muốn ưu tiên kiểm tra:</div>
+                    <div id="suggestTopicsList"></div>
+                </div>
+
+                <div class="field">
+                    <label>Yêu cầu riêng của giáo viên (tùy chọn):</label>
+                    <input type="text" id="suggestRequirementInput" placeholder="Ví dụ: Tập trung vào phân số và hình học, tăng câu hỏi vận dụng...">
+                </div>
+
+                <div style="text-align: right; margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 8px;">
+                    <button class="btn btn-secondary" onclick="closeSuggestModal()">Hủy</button>
+                    <button class="btn btn-primary" onclick="submitSuggestMatrix()">✨ Bắt Đầu Lập Ma Trận &amp; Bản Đặc Tả</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xem Phân phối chương trình (PPCT) -->
+    <div class="modal" id="ppctModal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3 id="ppctModalTitle" style="font-size: 1.15rem; font-weight: 700;">Phân phối chương trình (PPCT) GDPT 2018</h3>
+                <button class="modal-close" onclick="closePpctModal()">&times;</button>
+            </div>
+            <div>
+                <div style="margin-bottom: 10px; font-size: 0.85rem; color: var(--gray-600);">
+                    Danh mục bài học và yêu cầu cần đạt theo từng tuần (SGK Kết nối tri thức với cuộc sống).
+                </div>
+                <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
+                    <table class="matrix-table" id="ppctTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 70px; text-align: center;">Tuần</th>
+                                <th style="width: 140px;">Mạch kiến thức</th>
+                                <th style="width: 180px;">Tên bài học / Chủ đề</th>
+                                <th>Nội dung &amp; Yêu cầu cần đạt</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ppctTableBody"></tbody>
+                    </table>
+                </div>
+                <div style="text-align: right; margin-top: 1rem;">
+                    <button class="btn btn-secondary" onclick="closePpctModal()">Đóng</button>
                 </div>
             </div>
         </div>

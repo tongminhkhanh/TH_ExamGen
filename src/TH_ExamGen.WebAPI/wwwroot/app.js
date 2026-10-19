@@ -663,6 +663,159 @@ async function saveSettings() {
     }
 }
 
+// ================= SUGGEST & PPCT MODALS =================
+let currentSuggestSubject = "viet";
+let currentPpctData = [];
+
+async function openSuggestModal(subject) {
+    currentSuggestSubject = subject;
+    const grade = document.getElementById(`${subject}GradeSelect`).value;
+    const period = document.getElementById(`${subject}PeriodSelect`).value;
+    const subName = subject === "viet" ? "Môn Tiếng Việt" : "Môn Toán";
+
+    document.getElementById("suggestModalTitle").innerText = `AI Gợi ý Ma trận & Bản đặc tả - ${subName} Lớp ${grade} (${period})`;
+    document.getElementById("suggestRequirementInput").value = "";
+    document.querySelector('input[name="suggestMode"][value="auto"]').checked = true;
+    toggleSuggestTopicSelection();
+
+    showLoading("Đang tải danh mục phân phối chương trình (PPCT)...");
+    try {
+        const res = await fetch(`/api/curriculum/${subject}/ppct?grade=${grade}&period=${encodeURIComponent(period)}`);
+        if (!res.ok) throw new Error("Không thể tải danh mục PPCT");
+        const data = await res.json();
+        currentPpctData = data.topics || [];
+
+        const listDiv = document.getElementById("suggestTopicsList");
+        listDiv.innerHTML = "";
+        currentPpctData.forEach((t) => {
+            const row = document.createElement("label");
+            row.style.display = "flex";
+            row.style.alignItems = "flex-start";
+            row.style.gap = "6px";
+            row.style.marginBottom = "6px";
+            row.style.fontSize = "0.85rem";
+            row.style.cursor = "pointer";
+
+            row.innerHTML = `
+                <input type="checkbox" value="${t.noiDung || t.chuDe}" class="suggest-topic-cb" style="margin-top: 3px;">
+                <span><strong>[${t.tuan || 'Tuần'}]</strong> ${t.chuDe}: ${t.noiDung}</span>
+            `;
+            listDiv.appendChild(row);
+        });
+
+        document.getElementById("suggestModal").style.display = "flex";
+    } catch (err) {
+        alert("Lỗi: " + err.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+function closeSuggestModal() {
+    document.getElementById("suggestModal").style.display = "none";
+}
+
+function toggleSuggestTopicSelection() {
+    const isAuto = document.querySelector('input[name="suggestMode"]:checked').value === "auto";
+    document.getElementById("suggestTopicsContainer").style.display = isAuto ? "none" : "block";
+}
+
+async function submitSuggestMatrix() {
+    const subject = currentSuggestSubject;
+    const grade = parseInt(document.getElementById(`${subject}GradeSelect`).value);
+    const period = document.getElementById(`${subject}PeriodSelect`).value;
+    const isAuto = document.querySelector('input[name="suggestMode"]:checked').value === "auto";
+    const requirement = document.getElementById("suggestRequirementInput").value.trim();
+
+    let selectedTopics = [];
+    if (!isAuto) {
+        const cbs = document.querySelectorAll('.suggest-topic-cb:checked');
+        cbs.forEach(cb => selectedTopics.push(cb.value));
+        if (selectedTopics.length === 0) {
+            alert("Vui lòng tích chọn ít nhất 1 bài học/chủ điểm từ danh mục PPCT!");
+            return;
+        }
+    }
+
+    closeSuggestModal();
+    showLoading(`AI đang phân tích PPCT và lập Ma trận & Bản đặc tả mới... Quá trình có thể mất 30-40 giây.`);
+
+    try {
+        const res = await fetch(`/api/ai/${subject}/suggest-matrix`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                grade,
+                period,
+                requirement,
+                autoSelectTopics: isAuto,
+                selectedTopics: isAuto ? null : selectedTopics
+            })
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || "Gợi ý ma trận thất bại");
+        }
+
+        const items = await res.json();
+        if (subject === "viet") {
+            currentVietMatrix = items;
+            renderVietMatrixTable();
+            updateVietSummary();
+        } else {
+            currentMathMatrix = items;
+            renderMathMatrixTable();
+            updateMathSummary();
+        }
+
+        alert(`Đã lập thành công Ma trận & Bản đặc tả mới theo PPCT! Bạn có thể chỉnh sửa tiếp trên bảng và bấm 'Tải Word' để xuất file.`);
+    } catch (err) {
+        alert("Lỗi từ AI: " + err.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function openPpctModal(subject) {
+    const grade = document.getElementById(`${subject}GradeSelect`).value;
+    const period = document.getElementById(`${subject}PeriodSelect`).value;
+    const subName = subject === "viet" ? "Môn Tiếng Việt" : "Môn Toán";
+
+    document.getElementById("ppctModalTitle").innerText = `Phân phối chương trình (PPCT) - ${subName} Lớp ${grade} (${period})`;
+
+    showLoading("Đang tải danh mục PPCT...");
+    try {
+        const res = await fetch(`/api/curriculum/${subject}/ppct?grade=${grade}&period=${encodeURIComponent(period)}`);
+        if (!res.ok) throw new Error("Không thể tải danh mục PPCT");
+        const data = await res.json();
+
+        const tbody = document.getElementById("ppctTableBody");
+        tbody.innerHTML = "";
+
+        (data.topics || []).forEach(t => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td style="text-align: center; font-weight: 600;">${t.tuan || ''}</td>
+                <td><span class="badge badge-m1">${t.machKienThuc || ''}</span></td>
+                <td><strong>${t.chuDe || ''}</strong></td>
+                <td>${t.noiDung || ''} ${t.yeuCauCanDatM1 ? `<br><small style="color: #475569;">• M1: ${t.yeuCauCanDatM1}<br>• M2: ${t.yeuCauCanDatM2}<br>• M3: ${t.yeuCauCanDatM3}</small>` : ''}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById("ppctModal").style.display = "flex";
+    } catch (err) {
+        alert("Lỗi: " + err.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+function closePpctModal() {
+    document.getElementById("ppctModal").style.display = "none";
+}
+
 // Initial Load
 document.addEventListener("DOMContentLoaded", () => {
     loadVietCurriculum();

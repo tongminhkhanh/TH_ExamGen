@@ -146,7 +146,7 @@ namespace TH_ExamGen.WebAPI.Services
                 AddParam(insertCmd, "@today", GetVietnamTodayString());
                 AddParam(insertCmd, "@token", sessionToken);
                 AddParam(insertCmd, "@devId", deviceId ?? "");
-                AddParam(insertCmd, "@isLocked", false);
+                AddParam(insertCmd, "@isLocked", 0);
                 AddParam(insertCmd, "@created", DateTime.UtcNow);
 
                 await insertCmd.ExecuteNonQueryAsync();
@@ -402,7 +402,7 @@ namespace TH_ExamGen.WebAPI.Services
                         used_at = @usedAt
                     WHERE id = @keyId";
 
-                AddParam(updateKeyCmd, "@isUsed", true);
+                AddParam(updateKeyCmd, "@isUsed", 1);
                 AddParam(updateKeyCmd, "@phone", user.Phone);
                 AddParam(updateKeyCmd, "@usedAt", now);
                 AddParam(updateKeyCmd, "@keyId", key.Id);
@@ -529,7 +529,7 @@ namespace TH_ExamGen.WebAPI.Services
             AddParam(cmd, "@expire", newExpire);
             AddParam(cmd, "@quota", quota);
             AddParam(cmd, "@dailyLimit", dailyLimit);
-            AddParam(cmd, "@isLocked", false);
+            AddParam(cmd, "@isLocked", 0);
             AddParam(cmd, "@phone", phone);
 
             int affected = await cmd.ExecuteNonQueryAsync();
@@ -542,7 +542,7 @@ namespace TH_ExamGen.WebAPI.Services
             await conn.OpenAsync();
 
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "UPDATE users SET is_locked = NOT is_locked WHERE id = @uid";
+            cmd.CommandText = "UPDATE users SET is_locked = CASE WHEN is_locked = 1 THEN 0 ELSE 1 END WHERE id = @uid";
             AddParam(cmd, "@uid", userId);
             int affected = await cmd.ExecuteNonQueryAsync();
             return affected > 0;
@@ -575,7 +575,7 @@ namespace TH_ExamGen.WebAPI.Services
                 AddParam(cmd, "@days", days);
                 AddParam(cmd, "@quota", quota);
                 AddParam(cmd, "@daily", dailyLimit);
-                AddParam(cmd, "@isUsed", false);
+                AddParam(cmd, "@isUsed", 0);
                 AddParam(cmd, "@created", DateTime.UtcNow);
 
                 await cmd.ExecuteNonQueryAsync();
@@ -605,7 +605,7 @@ namespace TH_ExamGen.WebAPI.Services
                     DaysDuration = Convert.ToInt32(reader["days_duration"]),
                     QuotaAmount = Convert.ToInt32(reader["quota_amount"]),
                     DailyLimit = Convert.ToInt32(reader["daily_limit"]),
-                    IsUsed = Convert.ToBoolean(reader["is_used"]),
+                    IsUsed = Convert.ToInt32(reader["is_used"]) == 1,
                     UsedByPhone = reader["used_by_phone"]?.ToString(),
                     UsedAt = reader["used_at"] == DBNull.Value ? null : Convert.ToDateTime(reader["used_at"]),
                     CreatedAt = Convert.ToDateTime(reader["created_at"])
@@ -642,7 +642,7 @@ namespace TH_ExamGen.WebAPI.Services
                 LastGeneratedAt = reader["last_generated_at"] == DBNull.Value ? null : Convert.ToDateTime(reader["last_generated_at"]),
                 CurrentSessionToken = reader["current_session_token"]?.ToString() ?? "",
                 DeviceId = reader["device_id"]?.ToString() ?? "",
-                IsLocked = Convert.ToBoolean(reader["is_locked"]),
+                IsLocked = Convert.ToInt32(reader["is_locked"]) == 1,
                 CreatedAt = Convert.ToDateTime(reader["created_at"])
             };
         }

@@ -68,7 +68,7 @@ namespace TH_ExamGen.WebAPI.Database
                     last_generated_at TIMESTAMPTZ,
                     current_session_token VARCHAR(255),
                     device_id VARCHAR(100),
-                    is_locked BOOLEAN DEFAULT FALSE,
+                    is_locked INT DEFAULT 0,
                     created_at TIMESTAMPTZ DEFAULT NOW()
                 );
 
@@ -79,7 +79,7 @@ namespace TH_ExamGen.WebAPI.Database
                     days_duration INT NOT NULL,
                     quota_amount INT NOT NULL,
                     daily_limit INT NOT NULL,
-                    is_used BOOLEAN DEFAULT FALSE,
+                    is_used INT DEFAULT 0,
                     used_by_phone VARCHAR(20),
                     used_at TIMESTAMPTZ,
                     created_at TIMESTAMPTZ DEFAULT NOW()

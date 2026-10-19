@@ -128,7 +128,7 @@ async function submitLogin() {
 
         updateUserHeaderUI(currentUser);
         closeAuthModal();
-        alert(`Chào mừng Thầy/Cô ${currentUser.fullName || currentUser.phone} đã đăng nhập thành công!`);
+        openGuideModal();
     } catch (err) {
         alert("Lỗi đăng nhập: " + err.message);
     } finally {
@@ -173,7 +173,7 @@ async function submitRegister() {
 
         updateUserHeaderUI(currentUser);
         closeAuthModal();
-        alert(`Chúc mừng Thầy/Cô đã đăng ký thành công và nhận được 1 lượt tạo đề thi miễn phí!`);
+        openGuideModal();
     } catch (err) {
         alert("Lỗi đăng ký: " + err.message);
     } finally {
@@ -1029,6 +1029,18 @@ async function exportMathFullPackage() {
     }
 }
 
+// ================= GUIDE MODAL =================
+
+function openGuideModal() {
+    const m = document.getElementById("guideModal");
+    if (m) m.style.display = "flex";
+}
+
+function closeGuideModal() {
+    const m = document.getElementById("guideModal");
+    if (m) m.style.display = "none";
+}
+
 // ================= SETTINGS MODAL =================
 
 function openSettingsModal() {
@@ -1051,7 +1063,10 @@ async function loadSettings() {
             document.getElementById("cfgNamHoc").value = data.namHoc || "";
             document.getElementById("cfgAiProvider").value = data.aiProvider || "Gemini";
             if (data.geminiModel) {
-                document.getElementById("cfgGeminiModel").value = data.geminiModel;
+                const modelVal = (data.geminiModel === "gemini-1.5-flash" || data.geminiModel === "gemini-2.0-flash")
+                    ? "gemini-2.5-flash"
+                    : data.geminiModel;
+                document.getElementById("cfgGeminiModel").value = modelVal;
             }
             if (data.hasGeminiKey) {
                 document.getElementById("cfgGeminiKey").placeholder = data.geminiApiKey || "(Đã lưu khóa)";

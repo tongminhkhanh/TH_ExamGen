@@ -234,7 +234,7 @@ namespace TH_ExamGen.Services
         {
             if (string.IsNullOrWhiteSpace(model)) return "gemini-2.5-flash";
             var m = model.Trim();
-            if (m.Contains("3.8") || m.Contains("3.")) return "gemini-2.5-flash";
+            if (m == "gemini-1.5-flash" || m == "gemini-1.5-pro" || m == "gemini-2.0-flash") return "gemini-2.5-flash";
             return m;
         }
 
@@ -275,11 +275,13 @@ namespace TH_ExamGen.Services
 
             string responseBody = await response.Content.ReadAsStringAsync(ct);
 
-            // Tự động chuyển dự phòng sang gemini-1.5-flash nếu model hiện tại trả về 404 Not Found
-            if (response.StatusCode == System.Net.HttpStatusCode.NotFound && model != "gemini-1.5-flash")
+            // Tự động chuyển dự phòng sang gemini-2.5-flash nếu model hiện tại trả về 404 Not Found hoặc 503/502 Service Unavailable
+            if ((response.StatusCode == System.Net.HttpStatusCode.NotFound ||
+                 response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable ||
+                 response.StatusCode == System.Net.HttpStatusCode.BadGateway) && model != "gemini-2.5-flash")
             {
-                AppLogger.Warn($"Model {model} không tìm thấy (404), tự động chuyển sang gemini-1.5-flash...");
-                return await GenerateGeminiRawAsync(apiKey, "gemini-1.5-flash", promptText, ct);
+                AppLogger.Warn($"Model {model} gặp sự cố (HTTP {(int)response.StatusCode}), tự động chuyển sang gemini-2.5-flash...");
+                return await GenerateGeminiRawAsync(apiKey, "gemini-2.5-flash", promptText, ct);
             }
 
             if (!response.IsSuccessStatusCode)
@@ -426,11 +428,13 @@ namespace TH_ExamGen.Services
 
             string responseBody = await response.Content.ReadAsStringAsync(ct);
 
-            // Tự động chuyển dự phòng sang gemini-1.5-flash nếu model hiện tại trả về 404 Not Found
-            if (response.StatusCode == System.Net.HttpStatusCode.NotFound && model != "gemini-1.5-flash")
+            // Tự động chuyển dự phòng sang gemini-2.5-flash nếu model hiện tại trả về 404 Not Found hoặc 503/502 Service Unavailable
+            if ((response.StatusCode == System.Net.HttpStatusCode.NotFound ||
+                 response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable ||
+                 response.StatusCode == System.Net.HttpStatusCode.BadGateway) && model != "gemini-2.5-flash")
             {
-                AppLogger.Warn($"Model {model} không tìm thấy (404), tự động chuyển sang gemini-1.5-flash...");
-                return await GenerateGeminiTextAsync(apiKey, "gemini-1.5-flash", promptText, ct);
+                AppLogger.Warn($"Model {model} gặp sự cố (HTTP {(int)response.StatusCode}), tự động chuyển sang gemini-2.5-flash...");
+                return await GenerateGeminiTextAsync(apiKey, "gemini-2.5-flash", promptText, ct);
             }
 
             if (!response.IsSuccessStatusCode)

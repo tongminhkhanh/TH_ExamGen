@@ -4,6 +4,8 @@ using TH_ExamGen.Core.Curriculum;
 using TH_ExamGen.Core.MathModels;
 using TH_ExamGen.Core.VietModels;
 using TH_ExamGen.Services;
+using TH_ExamGen.WebAPI.Database;
+using TH_ExamGen.WebAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +27,11 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 var app = builder.Build();
+
+// Database & License Authentication initialization (Postgres / Supabase with local fallback)
+var dbService = new DatabaseService();
+await dbService.InitializeAsync();
+var authService = new LicenseAuthService(dbService);
 
 app.UseCors();
 app.UseDefaultFiles();
@@ -111,6 +118,115 @@ app.MapPost("/api/settings", (AppSettings newSettings) =>
 
     current.Save();
     return Results.Ok(new { message = "Cài đặt đã được lưu thành công!" });
+});
+
+// 2b. Authentication & User Account Endpoints
+app.MapPost("/api/auth/register", async (RegisterDto req) =>
+{
+    var (success, msg, token, user) = await authService.RegisterAsync(req.Phone, req.Password, req.FullName, req.School, req.DeviceId);
+    if (!success) return Results.BadRequest(new { error = msg });
+    return Results.Ok(new { message = msg, token, user });
+});
+
+app.MapPost("/api/auth/login", async (LoginDto req) =>
+{
+    var (success, msg, token, user) = await authService.LoginAsync(req.Phone, req.Password, req.DeviceId);
+    if (!success) return Results.BadRequest(new { error = msg });
+    return Results.Ok(new { message = msg, token, user });
+});
+
+app.MapGet("/api/auth/me", async (HttpContext ctx) =>
+{
+    string? token = ctx.Request.Headers["X-Session-Token"].FirstOrDefault();
+    if (string.IsNullOrWhiteSpace(token)) return Results.Unauthorized();
+    var user = await authService.GetUserByTokenAsync(token);
+    if (user == null) return Results.Unauthorized();
+    return Results.Ok(user);
+});
+
+app.MapPost("/api/auth/activate-key", async (ActivateKeyDto req, HttpContext ctx) =>
+{
+    string? token = ctx.Request.Headers["X-Session-Token"].FirstOrDefault();
+    if (string.IsNullOrWhiteSpace(token)) return Results.Unauthorized();
+    var user = await authService.GetUserByTokenAsync(token);
+    if (user == null) return Results.Unauthorized();
+    var (success, msg) = await authService.ActivateLicenseKeyAsync(user, req.KeyCode);
+    if (!success) return Results.BadRequest(new { error = msg });
+    var updatedUser = await authService.GetUserByTokenAsync(token);
+    return Results.Ok(new { message = msg, user = updatedUser });
+});
+
+app.MapGet("/api/user/exams", async (HttpContext ctx) =>
+{
+    string? token = ctx.Request.Headers["X-Session-Token"].FirstOrDefault();
+    if (string.IsNullOrWhiteSpace(token)) return Results.Unauthorized();
+    var user = await authService.GetUserByTokenAsync(token);
+    if (user == null) return Results.Unauthorized();
+    var list = await authService.GetUserExamsAsync(user.Id);
+    return Results.Ok(list);
+});
+
+app.MapGet("/api/user/exams/{id}", async (string id, HttpContext ctx) =>
+{
+    string? token = ctx.Request.Headers["X-Session-Token"].FirstOrDefault();
+    if (string.IsNullOrWhiteSpace(token)) return Results.Unauthorized();
+    var user = await authService.GetUserByTokenAsync(token);
+    if (user == null) return Results.Unauthorized();
+    var exam = await authService.GetExamByIdAsync(user.Id, id);
+    if (exam == null) return Results.NotFound(new { error = "Không tìm thấy đề thi." });
+    return Results.Ok(exam);
+});
+
+// 2c. Admin Portal Endpoints
+app.MapPost("/api/admin/auth", (AdminAuthDto req) =>
+{
+    if (authService.VerifyAdminPin(req.Pin))
+    {
+        return Results.Ok(new { success = true, message = "Xác thực Quản trị viên thành công!" });
+    }
+    return Results.BadRequest(new { error = "Mã PIN Quản trị viên không chính xác." });
+});
+
+app.MapGet("/api/admin/users", async (HttpContext ctx) =>
+{
+    string? pin = ctx.Request.Headers["X-Admin-Pin"].FirstOrDefault();
+    if (!authService.VerifyAdminPin(pin ?? "")) return Results.Unauthorized();
+    var users = await authService.AdminGetAllUsersAsync();
+    return Results.Ok(users);
+});
+
+app.MapPost("/api/admin/users/activate", async (AdminActivateDto req, HttpContext ctx) =>
+{
+    string? pin = ctx.Request.Headers["X-Admin-Pin"].FirstOrDefault();
+    if (!authService.VerifyAdminPin(pin ?? "")) return Results.Unauthorized();
+    bool ok = await authService.AdminActivateUserAsync(req.Phone, req.PackageType);
+    if (!ok) return Results.BadRequest(new { error = "Không tìm thấy số điện thoại người dùng để kích hoạt." });
+    return Results.Ok(new { message = $"Đã kích hoạt thành công gói {req.PackageType} cho SĐT {req.Phone}" });
+});
+
+app.MapPost("/api/admin/users/lock", async (AdminLockUserDto req, HttpContext ctx) =>
+{
+    string? pin = ctx.Request.Headers["X-Admin-Pin"].FirstOrDefault();
+    if (!authService.VerifyAdminPin(pin ?? "")) return Results.Unauthorized();
+    bool ok = await authService.AdminToggleLockUserAsync(req.UserId);
+    return Results.Ok(new { success = ok });
+});
+
+app.MapGet("/api/admin/keys", async (HttpContext ctx) =>
+{
+    string? pin = ctx.Request.Headers["X-Admin-Pin"].FirstOrDefault();
+    if (!authService.VerifyAdminPin(pin ?? "")) return Results.Unauthorized();
+    var keys = await authService.AdminGetAllKeysAsync();
+    return Results.Ok(keys);
+});
+
+app.MapPost("/api/admin/keys/generate", async (AdminGenerateKeysDto req, HttpContext ctx) =>
+{
+    string? pin = ctx.Request.Headers["X-Admin-Pin"].FirstOrDefault();
+    if (!authService.VerifyAdminPin(pin ?? "")) return Results.Unauthorized();
+    int count = req.Count <= 0 ? 1 : Math.Min(50, req.Count);
+    var keys = await authService.AdminGenerateKeysAsync(req.PackageType, count);
+    return Results.Ok(new { keys });
 });
 
 // 3. Curriculum / Matrix
@@ -240,10 +356,28 @@ app.MapPost("/api/ai/math/audit-matrix", async (AuditMathMatrixDto req) =>
     }
 });
 
-app.MapPost("/api/ai/viet/generate-exam", async (GenerateVietExamDto req, CancellationToken ct) =>
+app.MapPost("/api/ai/viet/generate-exam", async (GenerateVietExamDto req, HttpContext ctx, CancellationToken ct) =>
 {
     try
     {
+        string? token = ctx.Request.Headers["X-Session-Token"].FirstOrDefault();
+        UserRecord? user = null;
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            user = await authService.GetUserByTokenAsync(token);
+        }
+
+        if (user == null)
+        {
+            return Results.Json(new { error = "Vui lòng đăng nhập (hoặc bấm 'Đăng ký' nhận 3 đề miễn phí) để tạo đề thi bằng AI!" }, statusCode: 401);
+        }
+
+        var (allowed, reason) = authService.VerifyExamGenerationQuota(user, token!);
+        if (!allowed)
+        {
+            return Results.BadRequest(new { error = reason });
+        }
+
         var settings = GetEffectiveSettings(req.Settings);
         var gemini = new GeminiService();
         var paper = await gemini.GenerateVietExamAsync(
@@ -256,6 +390,10 @@ app.MapPost("/api/ai/viet/generate-exam", async (GenerateVietExamDto req, Cancel
             req.Period,
             ct);
 
+        // Tầng 5: Trừ lượt an toàn & Lưu kho đề cũ
+        string title = $"Đề Tiếng Việt Lớp {req.Grade} ({req.Period}) - {DateTime.UtcNow.AddHours(7):dd/MM/yyyy HH:mm}";
+        await authService.CommitSuccessfulExamAsync(user, "viet", req.Grade, req.Period, title, JsonSerializer.Serialize(paper));
+
         return Results.Ok(paper);
     }
     catch (Exception ex)
@@ -264,10 +402,28 @@ app.MapPost("/api/ai/viet/generate-exam", async (GenerateVietExamDto req, Cancel
     }
 });
 
-app.MapPost("/api/ai/math/generate-exam", async (GenerateMathExamDto req, CancellationToken ct) =>
+app.MapPost("/api/ai/math/generate-exam", async (GenerateMathExamDto req, HttpContext ctx, CancellationToken ct) =>
 {
     try
     {
+        string? token = ctx.Request.Headers["X-Session-Token"].FirstOrDefault();
+        UserRecord? user = null;
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            user = await authService.GetUserByTokenAsync(token);
+        }
+
+        if (user == null)
+        {
+            return Results.Json(new { error = "Vui lòng đăng nhập (hoặc bấm 'Đăng ký' nhận 3 đề miễn phí) để tạo đề thi bằng AI!" }, statusCode: 401);
+        }
+
+        var (allowed, reason) = authService.VerifyExamGenerationQuota(user, token!);
+        if (!allowed)
+        {
+            return Results.BadRequest(new { error = reason });
+        }
+
         var settings = GetEffectiveSettings(req.Settings);
         var gemini = new GeminiService();
         var paper = await gemini.GenerateMathExamAsync(
@@ -277,6 +433,10 @@ app.MapPost("/api/ai/math/generate-exam", async (GenerateMathExamDto req, Cancel
             req.Matrix,
             req.Period,
             ct);
+
+        // Tầng 5: Trừ lượt an toàn & Lưu kho đề cũ
+        string title = $"Đề Toán Lớp {req.Grade} ({req.Period}) - {DateTime.UtcNow.AddHours(7):dd/MM/yyyy HH:mm}";
+        await authService.CommitSuccessfulExamAsync(user, "math", req.Grade, req.Period, title, JsonSerializer.Serialize(paper));
 
         return Results.Ok(paper);
     }
@@ -492,3 +652,47 @@ public class SuggestMatrixDto
     public List<string>? SelectedTopics { get; set; }
     public AppSettings? Settings { get; set; }
 }
+
+public class RegisterDto
+{
+    public string Phone { get; set; } = "";
+    public string Password { get; set; } = "";
+    public string FullName { get; set; } = "";
+    public string School { get; set; } = "";
+    public string DeviceId { get; set; } = "";
+}
+
+public class LoginDto
+{
+    public string Phone { get; set; } = "";
+    public string Password { get; set; } = "";
+    public string DeviceId { get; set; } = "";
+}
+
+public class ActivateKeyDto
+{
+    public string KeyCode { get; set; } = "";
+}
+
+public class AdminAuthDto
+{
+    public string Pin { get; set; } = "";
+}
+
+public class AdminActivateDto
+{
+    public string Phone { get; set; } = "";
+    public string PackageType { get; set; } = "Year";
+}
+
+public class AdminLockUserDto
+{
+    public string UserId { get; set; } = "";
+}
+
+public class AdminGenerateKeysDto
+{
+    public string PackageType { get; set; } = "Year";
+    public int Count { get; set; } = 5;
+}
+

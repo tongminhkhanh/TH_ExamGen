@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TH_ExamGen - Cổng Quản Trị Hệ Thống & Bản Quyền</title>
+    <link rel="stylesheet" href="style.css?v=2.3">
+    <style>
+        .admin-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #ffffff;
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow-md);
+        }
+        .admin-pin-card {
+            max-width: 400px;
+            margin: 80px auto;
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+        .admin-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .badge-trial { background: #fef3c7; color: #92400e; }
+        .badge-term { background: #e0f2fe; color: #0369a1; }
+        .badge-year { background: #dcfce7; color: #15803d; }
+        .badge-school { background: #f3e8ff; color: #6b21a8; }
+        .badge-locked { background: #fee2e2; color: #b91c1c; }
+        
+        .admin-tab-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--gray-200);
+            padding-bottom: 4px;
+        }
+        .admin-tab-btn {
+            background: none;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 6px 6px 0 0;
+            border-bottom: 3px solid transparent;
+        }
+        .admin-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: #ffffff;
+        }
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow);
+        }
+        .stat-num {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--gray-600);
+        }
+        .copy-box {
+            background: #f8fafc;
+            border: 1px dashed var(--gray-300);
+            border-radius: 6px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            position: relative;
+        }
+    </style>
+</head>
+<body style="background-color: #f8fafc;">
+
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <div style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px;">TH_ExamGen</span>
+                <span class="admin-badge" style="background: #ef4444; color: white;">Hệ Thống Quản Trị</span>
+            </div>
+            <div id="adminHeaderInfo" style="display: none; align-items: center; gap: 12px;">
+                <span style="font-size: 0.85rem; color: #94a3b8;">Đang đăng nhập: <strong>Quản Trị Viên</strong></span>
+                <a href="index.html" class="btn btn-outline-light btn-sm" style="text-decoration: none;">🌐 Về Trang Ứng Dụng</a>
+                <button class="btn btn-secondary btn-sm" onclick="adminLogout()">Thoát</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 1. Màn hình Nhập Master PIN (Nếu chưa xác thực) -->
+    <div id="adminAuthScreen" class="admin-pin-card">
+        <div style="font-size: 2.5rem; margin-bottom: 8px;">🔐</div>
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 6px; color: var(--gray-900);">Xác Thực Quản Trị Viên</h2>
+        <p style="font-size: 0.85rem; color: var(--gray-600); margin-bottom: 1.5rem;">
+            Nhập mã PIN chủ (Master PIN) để truy cập cổng quản trị khách hàng và tạo mã bản quyền.
+        </p>
+        <div style="margin-bottom: 1rem;">
+            <input type="password" id="adminPinInput" placeholder="Nhập mã PIN (Mặc định: 888888)" style="width: 100%; padding: 10px 14px; font-size: 1.1rem; text-align: center; border: 2px solid var(--gray-300); border-radius: 8px; letter-spacing: 4px;">
+        </div>
+        <button class="btn btn-primary" style="width: 100%; justify-content: center; padding: 10px; font-size: 0.95rem;" onclick="submitAdminAuth()">
+            🚀 Mở Khóa Bảng Điều Khiển
+        </button>
+        <div style="margin-top: 1rem; font-size: 0.75rem; color: var(--gray-600);">
+            💡 Mã PIN có thể thay đổi bằng biến môi trường <code>ADMIN_PIN</code> trên Render.
+        </div>
+    </div>
+
+    <!-- 2. Bảng Điều Khiển Quản Trị (Khi đã xác thực) -->
+    <main id="adminMainDashboard" class="main-container" style="display: none; margin-top: 1.5rem;">
+        
+        <!-- Tab Navigation -->
+        <nav class="admin-tab-nav">
+            <button class="admin-tab-btn active" id="tabUsersBtn" onclick="switchAdminTab('users')">
+                👥 Quản Lý Tài Khoản Khách Hàng
+            </button>
+            <button class="admin-tab-btn" id="tabKeysBtn" onclick="switchAdminTab('keys')">
+                🔑 Trình Tạo Mã Kích Hoạt (License Keys)
+            </button>
+            <button class="admin-tab-btn" id="tabDbBtn" onclick="switchAdminTab('database')">
+                ☁️ Cấu Hình Supabase &amp; SQL DDL
+            </button>
+        </nav>
+
+        <!-- ================= TAB 1: QUẢN LÝ TÀI KHOẢN KHÁCH HÀNG ================= -->
+        <div id="tabAdminUsers">
+            <!-- Thống kê nhanh -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 1.5rem;">
+                <div class="stat-card">
+                    <div>
+                        <div class="stat-num" id="statTotalUsers">0</div>
+                        <div class="stat-label">Tổng khách hàng</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div>
+                        <div class="stat-num" id="statActiveUsers" style="color: var(--success);">0</div>
+                        <div class="stat-label">Đang có bản quyền trả phí</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div>
+                        <div class="stat-num" id="statExamsToday" style="color: #ea580c;">0</div>
+                        <div class="stat-label">Đề thi sinh hôm nay</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div>
+                        <div class="stat-num" id="statEstimatedCost" style="color: #7c3aed;">0đ</div>
+                        <div class="stat-label">Ước tính phí Gemini hôm nay (~40đ/đề)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thanh Tìm Kiếm & Lọc -->
+            <div class="card" style="margin-bottom: 1rem;">
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 260px;">
+                        <input type="text" id="adminUserSearchInput" oninput="filterUserTable()" placeholder="🔍 Tìm kiếm theo Số điện thoại, Họ tên, hoặc Trường..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 6px;">
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="loadAdminUsers()">🔄 Tải Lại Dữ Liệu</button>
+                    <button class="btn btn-primary btn-sm" onclick="openDirectActivatePrompt()">⚡ Kích Hoạt Nhanh Bằng SĐT</button>
+                </div>
+            </div>
+
+            <!-- Bảng Người Dùng -->
+            <div class="card">
+                <div class="card-title">
+                    <span>Danh Sách Tài Khoản Giáo Viên (Tối đa 200 gần nhất)</span>
+                    <span id="userCountBadge" style="font-size: 0.85rem; font-weight: normal; color: var(--gray-600);"></span>
+                </div>
+                <div class="table-responsive" style="max-height: 520px; overflow-y: auto;">
+                    <table class="matrix-table" id="adminUsersTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 110px;">Số ĐT</th>
+                                <th style="width: 160px;">Họ Tên / Trường</th>
+                                <th style="width: 90px; text-align: center;">Gói Dùng</th>
+                                <th style="width: 100px; text-align: center;">Hạn Dùng</th>
+                                <th style="width: 80px; text-align: center;">Còn Lại</th>
+                                <th style="width: 80px; text-align: center;">Hôm Nay</th>
+                                <th style="width: 90px; text-align: center;">Trạng Thái</th>
+                                <th style="width: 250px; text-align: center;">Thao Tác 1 Chạm</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminUsersTableBody">
+                            <!-- Rendered by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 2: TẠO MÃ KÍCH HOẠT (LICENSE KEYS) ================= -->
+        <div id="tabAdminKeys" style="display: none;">
+            <!-- Box Tạo Mã Mới -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-title">⚡ Trình Tạo Mã Kích Hoạt Bản Quyền Hàng Loạt</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 1rem;">
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 4px;">Loại gói bản quyền:</label>
+                        <select id="keyGenPackageType" style="width: 100%; padding: 8px 10px; border: 1px solid var(--gray-300); border-radius: 6px;">
+                            <option value="Term">Gói Học Kỳ (35 đề / 150 ngày / Max 5 đề/ngày)</option>
+                            <option value="Year" selected>Gói Cả Năm (90 đề / 365 ngày / Max 8 đề/ngày)</option>
+                            <option value="SchoolItem">Gói Tổ Chuyên Môn / Trường (1 mã x 60 đề / 365 ngày)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 4px;">Số lượng mã cần tạo:</label>
+                        <select id="keyGenCount" style="width: 100%; padding: 8px 10px; border: 1px solid var(--gray-300); border-radius: 6px;">
+                            <option value="1">1 Mã duy nhất</option>
+                            <option value="5" selected>5 Mã (Combo 1 Trường)</option>
+                            <option value="10">10 Mã</option>
+                            <option value="20">20 Mã</option>
+                            <option value="50">50 Mã</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: flex-end;">
+                        <button class="btn btn-success" style="width: 100%; justify-content: center; padding: 9px;" onclick="submitGenerateKeys()">
+                            ✨ Sinh Mã Ngay
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Box Kết quả mã vừa sinh & Tin nhắn mẫu -->
+                <div id="newlyGeneratedBox" style="display: none; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 14px; margin-top: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <strong style="color: #166534; font-size: 0.95rem;">🎉 Đã tạo thành công các mã sau:</strong>
+                        <button class="btn btn-primary btn-sm" onclick="copyZaloTemplate()">📋 Copy Tin Nhắn Gửi Zalo Cho Giáo Viên</button>
+                    </div>
+                    <div class="copy-box" id="newKeysListDisplay"></div>
+                </div>
+            </div>
+
+            <!-- Bảng Lịch Sử Tất Cả Mã Bản Quyền -->
+            <div class="card">
+                <div class="card-title">
+                    <span>Kho Toàn Bộ Mã Bản Quyền Đã Phát Hành</span>
+                    <button class="btn btn-secondary btn-sm" onclick="loadAdminKeys()">🔄 Tải Lại</button>
+                </div>
+                <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
+                    <table class="matrix-table" id="adminKeysTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 220px;">Mã Kích Hoạt (Key Code)</th>
+                                <th style="width: 120px; text-align: center;">Gói</th>
+                                <th style="width: 80px; text-align: center;">Số Đề</th>
+                                <th style="width: 80px; text-align: center;">Thời Hạn</th>
+                                <th style="width: 100px; text-align: center;">Trạng Thái</th>
+                                <th style="width: 120px;">SĐT Đã Nạp</th>
+                                <th style="width: 130px; text-align: center;">Ngày Kích Hoạt</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminKeysTableBody">
+                            <!-- Rendered by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 3: CẤU HÌNH SUPABASE & SQL DDL ================= -->
+        <div id="tabAdminDatabase" style="display: none;">
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-title">☁️ Trạng Thái Kết Nối Cơ Sở Dữ Liệu</div>
+                <p style="font-size: 0.875rem; color: var(--gray-700); line-height: 1.6;">
+                    Hệ thống <strong>TH_ExamGen</strong> hỗ trợ lưu trữ kép linh hoạt:<br>
+                    • <strong>Đám mây (Supabase PostgreSQL):</strong> Dữ liệu tồn tại vĩnh viễn trên đám mây, an toàn tuyệt đối khi Render tự khởi động lại hoặc nâng cấp mã nguồn.<br>
+                    • <strong>Dự phòng cục bộ (SQLite):</strong> Tự động kích hoạt khi chưa có chuỗi kết nối Supabase, đảm bảo hệ thống không bao giờ bị gián đoạn hay treo server.
+                </p>
+                <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px; margin-top: 10px; font-size: 0.85rem;">
+                    <strong>Cách cấu hình Supabase trên Render.com:</strong><br>
+                    1. Đăng nhập Supabase.com ➔ Tạo dự án mới ➔ Vào <strong>Project Settings ➔ Database</strong>.<br>
+                    2. Copy chuỗi <strong>URI</strong> kết nối (dạng: <code>postgresql://postgres.[ref]:[password]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres</code>).<br>
+                    3. Mở Render.com ➔ Vào Web Service của bạn ➔ <strong>Environment</strong> ➔ Thêm biến: <code>SUPABASE_CONNECTION_STRING</code> và dán chuỗi trên vào.
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span>📜 Đoạn Mã SQL DDL Tạo 3 Bảng (Chạy trên SQL Editor của Supabase)</span>
+                    <button class="btn btn-secondary btn-sm" onclick="copySupabaseSql()">📋 Copy Mã SQL</button>
+                </div>
+                <p style="font-size: 0.825rem; color: var(--gray-600); margin-bottom: 8px;">
+                    Mặc dù hệ thống C# đã tự động chạy DDL tạo bảng khi khởi động, bạn có thể chạy đoạn SQL này trực tiếp trên Supabase SQL Editor nếu muốn xem hoặc tùy biến cấu trúc:
+                </p>
+                <div class="copy-box" id="supabaseSqlContent">CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    phone TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    full_name TEXT,
+    school TEXT,
+    package_type TEXT DEFAULT 'Trial',
+    expire_at TIMESTAMP WITH TIME ZONE,
+    total_quota_remaining INT DEFAULT 3,
+    daily_quota_limit INT DEFAULT 5,
+    daily_generated_count INT DEFAULT 0,
+    last_generated_date TEXT,
+    last_generated_at TIMESTAMP WITH TIME ZONE,
+    current_session_token TEXT,
+    device_id TEXT,
+    is_locked INT DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS license_keys (
+    id TEXT PRIMARY KEY,
+    key_code TEXT NOT NULL UNIQUE,
+    package_type TEXT NOT NULL,
+    days_duration INT NOT NULL,
+    quota_amount INT NOT NULL,
+    daily_limit INT NOT NULL,
+    is_used INT DEFAULT 0,
+    used_by_phone TEXT,
+    used_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS exam_logs (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    grade INT NOT NULL,
+    period TEXT NOT NULL,
+    title TEXT NOT NULL,
+    exam_data_json TEXT NOT NULL,
+    tokens_consumed INT DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);</div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="adminLoadingOverlay">
+        <div class="loading-spinner"></div>
+        <div id="adminLoadingText" style="font-size: 1rem; font-weight: 600;">Đang xử lý...</div>
+    </div>
+
+    <!-- Admin JS Logic -->
+    <script>
+        let adminPin = sessionStorage.getItem("thexam_admin_pin") || "";
+        let allUsersData = [];
+        let newlyGeneratedCodes = [];
+
+        function showAdminLoading(msg = "Đang xử lý...") {
+            document.getElementById("adminLoadingText").innerText = msg;
+            document.getElementById("adminLoadingOverlay").style.display = "flex";
+        }
+        function hideAdminLoading() {
+            document.getElementById("adminLoadingOverlay").style.display = "none";
+        }
+
+        async function submitAdminAuth() {
+            const pin = document.getElementById("adminPinInput").value.trim();
+            if (!pin) {
+                alert("Vui lòng nhập mã PIN quản trị!");
+                return;
+            }
+            showAdminLoading("Đang xác thực...");
+            try {
+                const res = await fetch("/api/admin/auth", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ pin })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "Mã PIN không chính xác");
+                
+                adminPin = pin;
+                sessionStorage.setItem("thexam_admin_pin", pin);
+                document.getElementById("adminAuthScreen").style.display = "none";
+                document.getElementById("adminMainDashboard").style.display = "block";
+                document.getElementById("adminHeaderInfo").style.display = "flex";
+                
+                loadAdminUsers();
+            } catch (err) {
+                alert("Lỗi: " + err.message);
+            } finally {
+                hideAdminLoading();
+            }
+        }
+
+        function adminLogout() {
+            sessionStorage.removeItem("thexam_admin_pin");
+            adminPin = "";
+            location.reload();
+        }
+
+        function switchAdminTab(tab) {
+            document.getElementById("tabUsersBtn").classList.toggle("active", tab === "users");
+            document.getElementById("tabKeysBtn").classList.toggle("active", tab === "keys");
+            document.getElementById("tabDbBtn").classList.toggle("active", tab === "database");
+
+            document.getElementById("tabAdminUsers").style.display = tab === "users" ? "block" : "none";
+            document.getElementById("tabAdminKeys").style.display = tab === "keys" ? "block" : "none";
+            document.getElementById("tabAdminDatabase").style.display = tab === "database" ? "block" : "none";
+
+            if (tab === "keys") loadAdminKeys();
+        }
+
+        // ================= USERS MANAGEMENT =================
+
+        async function loadAdminUsers() {
+            if (!adminPin) return;
+            showAdminLoading("Đang tải danh sách người dùng...");
+            try {
+                const res = await fetch("/api/admin/users", {
+                    headers: { "X-Admin-Pin": adminPin }
+                });
+                if (!res.ok) throw new Error("Không thể tải danh sách tài khoản");
+                allUsersData = await res.json();
+                renderUsersTable(allUsersData);
+                updateStats(allUsersData);
+            } catch (err) {
+                alert("Lỗi: " + err.message);
+            } finally {
+                hideAdminLoading();
+            }
+        }
+
+        function updateStats(users) {
+            document.getElementById("statTotalUsers").innerText = users.length;
+            const activePaid = users.filter(u => u.packageType !== "Trial" && !u.isLocked).length;
+            document.getElementById("statActiveUsers").innerText = activePaid;
+
+            const examsToday = users.reduce((acc, u) => acc + (u.dailyGeneratedCount || 0), 0);
+            document.getElementById("statExamsToday").innerText = examsToday;
+            document.getElementById("statEstimatedCost").innerText = (examsToday * 40).toLocaleString("vi-VN") + "đ";
+        }
+
+        function renderUsersTable(users) {
+            const tbody = document.getElementById("adminUsersTableBody");
+            tbody.innerHTML = "";
+            document.getElementById("userCountBadge").innerText = `(Hiển thị ${users.length} tài khoản)`;
+
+            if (users.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 24px; color: var(--gray-600);">Chưa có người dùng nào đăng ký.</td></tr>`;
+                return;
+            }
+
+            users.forEach(u => {
+                const tr = document.createElement("tr");
+
+                let pkgBadge = `<span class="admin-badge badge-trial">Dùng thử</span>`;
+                if (u.packageType === "Term") pkgBadge = `<span class="admin-badge badge-term">Gói Kỳ</span>`;
+                else if (u.packageType === "Year") pkgBadge = `<span class="admin-badge badge-year">Gói Năm</span>`;
+                else if (u.packageType === "School" || u.packageType === "SchoolItem") pkgBadge = `<span class="admin-badge badge-school">Gói Trường</span>`;
+
+                const expireStr = u.expireAt ? new Date(u.expireAt).toLocaleDateString("vi-VN") : "Vĩnh viễn";
+                const isLocked = u.isLocked;
+                const statusHtml = isLocked 
+                    ? `<span class="admin-badge badge-locked">Đã khóa</span>`
+                    : `<span class="admin-badge badge-year">Hoạt động</span>`;
+
+                tr.innerHTML = `
+                    <td style="font-weight: 700; font-family: monospace;">${u.phone}</td>
+                    <td>
+                        <div style="font-weight: 600;">${u.fullName || 'Chưa đặt tên'}</div>
+                        <div style="font-size: 0.75rem; color: var(--gray-600);">${u.school || 'Chưa rõ trường'}</div>
+                    </td>
+                    <td style="text-align: center;">${pkgBadge}</td>
+                    <td style="text-align: center; font-size: 0.8rem;">${expireStr}</td>
+                    <td style="text-align: center; font-weight: 700; color: var(--primary);">${u.totalQuotaRemaining} đề</td>
+                    <td style="text-align: center; font-size: 0.85rem;">${u.dailyGeneratedCount} / ${u.dailyQuotaLimit}</td>
+                    <td style="text-align: center;">${statusHtml}</td>
+                    <td style="text-align: center;">
+                        <div style="display: flex; gap: 4px; justify-content: center; flex-wrap: wrap;">
+                            <button class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="adminActivateUser('${u.phone}', 'Term')" title="Kích hoạt Gói Kỳ (35 đề / 150 ngày)">+ Kỳ</button>
+                            <button class="btn btn-primary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="adminActivateUser('${u.phone}', 'Year')" title="Kích hoạt Gói Năm (90 đề / 365 ngày)">+ Năm</button>
+                            <button class="btn btn-success btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="adminActivateUser('${u.phone}', 'Bonus5')" title="Tặng thêm 5 đề">+5 Đề</button>
+                            <button class="btn ${isLocked ? 'btn-success' : 'btn-danger'} btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="adminToggleLock('${u.id}')">
+                                ${isLocked ? 'Mở Khóa' : 'Khóa'}
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterUserTable() {
+            const q = document.getElementById("adminUserSearchInput").value.trim().toLowerCase();
+            if (!q) {
+                renderUsersTable(allUsersData);
+                return;
+            }
+            const filtered = allUsersData.filter(u => 
+                (u.phone && u.phone.toLowerCase().includes(q)) ||
+                (u.fullName && u.fullName.toLowerCase().includes(q)) ||
+                (u.school && u.school.toLowerCase().includes(q))
+            );
+            renderUsersTable(filtered);
+        }
+
+        async function adminActivateUser(phone, packageType) {
+            const pkgNames = { Term: "Gói Học Kỳ (35 đề)", Year: "Gói Cả Năm (90 đề)", Bonus5: "Tặng 5 đề thi" };
+            if (!confirm(`Xác nhận kích hoạt ${pkgNames[packageType] || packageType} cho số điện thoại ${phone}?`)) return;
+
+            showAdminLoading("Đang kích hoạt...");
+            try {
+                const res = await fetch("/api/admin/users/activate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "X-Admin-Pin": adminPin },
+                    body: JSON.stringify({ phone, packageType })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "Không thể kích hoạt");
+                alert(data.message);
+                loadAdminUsers();
+            } catch (err) {
+                alert("Lỗi: " + err.message);
+            } finally {
+                hideAdminLoading();
+            }
+        }
+
+        async function openDirectActivatePrompt() {
+            const phone = prompt("Nhập Số Điện Thoại khách hàng cần kích hoạt bản quyền:");
+            if (!phone) return;
+            const pkg = prompt("Chọn loại gói:\n1 = Gói Học Kỳ (35 đề)\n2 = Gói Cả Năm (90 đề)\n3 = Gói Trường (300 đề)\nNhập số 1, 2 hoặc 3:", "2");
+            let packageType = "Year";
+            if (pkg === "1") packageType = "Term";
+            else if (pkg === "3") packageType = "School";
+
+            adminActivateUser(phone.trim(), packageType);
+        }
+
+        async function adminToggleLock(userId) {
+            if (!confirm("Xác nhận thay đổi trạng thái khóa/mở tài khoản này?")) return;
+            showAdminLoading("Đang xử lý...");
+            try {
+                const res = await fetch("/api/admin/users/lock", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "X-Admin-Pin": adminPin },
+                    body: JSON.stringify({ userId })
+                });
+                if (!res.ok) throw new Error("Thao tác thất bại");
+                loadAdminUsers();
+            } catch (err) {
+                alert("Lỗi: " + err.message);
+            } finally {
+                hideAdminLoading();
+            }
+        }
+
+        // ================= LICENSE KEYS MANAGEMENT =================
+
+        async function submitGenerateKeys() {
+            const packageType = document.getElementById("keyGenPackageType").value;
+            const count = parseInt(document.getElementById("keyGenCount").value);
+
+            showAdminLoading(`Đang sinh ${count} mã bản quyền...`);
+            try {
+                const res = await fetch("/api/admin/keys/generate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "X-Admin-Pin": adminPin },
+                    body: JSON.stringify({ packageType, count })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "Không thể tạo mã");
+
+                newlyGeneratedCodes = data.keys;
+                document.getElementById("newKeysListDisplay").innerText = data.keys.join("\n");
+                document.getElementById("newlyGeneratedBox").style.display = "block";
+
+                loadAdminKeys();
+            } catch (err) {
+                alert("Lỗi: " + err.message);
+            } finally {
+                hideAdminLoading();
+            }
+        }
+
+        async function loadAdminKeys() {
+            if (!adminPin) return;
+            showAdminLoading("Đang tải danh sách mã bản quyền...");
+            try {
+                const res = await fetch("/api/admin/keys", {
+                    headers: { "X-Admin-Pin": adminPin }
+                });
+                if (!res.ok) throw new Error("Không thể tải danh sách mã");
+                const keys = await res.json();
+                renderKeysTable(keys);
+            } catch (err) {
+                alert("Lỗi: " + err.message);
+            } finally {
+                hideAdminLoading();
+            }
+        }
+
+        function renderKeysTable(keys) {
+            const tbody = document.getElementById("adminKeysTableBody");
+            tbody.innerHTML = "";
+
+            if (keys.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--gray-600);">Chưa có mã kích hoạt nào được tạo.</td></tr>`;
+                return;
+            }
+
+            keys.forEach(k => {
+                const tr = document.createElement("tr");
+                const isUsed = k.isUsed;
+                const statusHtml = isUsed 
+                    ? `<span class="admin-badge badge-trial">Đã nạp</span>`
+                    : `<span class="admin-badge badge-year">Chưa dùng</span>`;
+
+                tr.innerHTML = `
+                    <td style="font-family: monospace; font-weight: 700; color: var(--primary);">${k.keyCode}</td>
+                    <td style="text-align: center;">${k.packageType}</td>
+                    <td style="text-align: center; font-weight: 600;">${k.quotaAmount} đề</td>
+                    <td style="text-align: center;">${k.daysDuration} ngày</td>
+                    <td style="text-align: center;">${statusHtml}</td>
+                    <td style="font-family: monospace;">${k.usedByPhone || '-'}</td>
+                    <td style="text-align: center; font-size: 0.8rem;">${k.usedAt ? new Date(k.usedAt).toLocaleDateString("vi-VN") : '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function copyZaloTemplate() {
+            if (newlyGeneratedCodes.length === 0) return;
+            const text = `Kính gửi Thầy/Cô,\n\nBan quản trị hệ thống TH_ExamGen xin gửi tặng/cung cấp Mã kích hoạt bản quyền:\n\n${newlyGeneratedCodes.map(k => "🔑 " + k).join("\n")}\n\n👉 HƯỚNG DẪN KÍCH HOẠT:\n1. Truy cập trang web TH_ExamGen\n2. Đăng nhập số điện thoại của Thầy/Cô\n3. Bấm vào nút "Nạp Key" ở góc phải màn hình và dán mã trên vào để sử dụng ngay.\n\nChúc Thầy/Cô có những bộ đề thi chuẩn mực và ưng ý nhất!`;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Đã sao chép tin nhắn mẫu Zalo vào clipboard! Thầy/Cô có thể dán trực tiếp vào khung chat Zalo.");
+            });
+        }
+
+        function copySupabaseSql() {
+            const sql = document.getElementById("supabaseSqlContent").innerText;
+            navigator.clipboard.writeText(sql).then(() => {
+                alert("Đã sao chép đoạn mã SQL DDL vào clipboard!");
+            });
+        }
+
+        // Tự động kiểm tra session khi tải trang
+        document.addEventListener("DOMContentLoaded", () => {
+            if (adminPin) {
+                document.getElementById("adminAuthScreen").style.display = "none";
+                document.getElementById("adminMainDashboard").style.display = "block";
+                document.getElementById("adminHeaderInfo").style.display = "flex";
+                loadAdminUsers();
+            }
+        });
+    </script>
+</body>
+</html>

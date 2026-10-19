@@ -524,3 +524,121 @@ select:focus, input:focus, textarea:focus {
     color: var(--gray-600);
     margin-top: 2px;
 }
+
+/* User Profile & Auth Elements */
+.btn-outline-light {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #ffffff;
+}
+.btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #ffffff;
+}
+
+.btn-primary-light {
+    background: #ffffff;
+    color: var(--primary);
+    border: 1px solid #ffffff;
+}
+.btn-primary-light:hover {
+    background: #f1f5f9;
+}
+
+.user-quota-badge {
+    transition: all 0.2s ease;
+}
+.user-quota-badge:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Pricing Grid */
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 14px 0;
+}
+
+.pricing-card {
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 14px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    box-shadow: var(--shadow);
+}
+
+.pricing-card.popular {
+    border: 2px solid var(--primary);
+    background: #f8faff;
+}
+
+.popular-badge {
+    position: absolute;
+    top: -10px;
+    right: 12px;
+    background: #ea580c;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    text-transform: uppercase;
+}
+
+.pricing-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--gray-800);
+    margin-bottom: 4px;
+}
+
+.pricing-price {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 8px;
+}
+
+.pricing-features {
+    font-size: 0.8rem;
+    color: var(--gray-600);
+    line-height: 1.6;
+    margin-bottom: 12px;
+    list-style: none;
+    padding: 0;
+}
+
+.pricing-features li::before {
+    content: "✓ ";
+    color: var(--success);
+    font-weight: bold;
+}
+
+/* Auth Modal Tabs */
+.auth-nav {
+    display: flex;
+    border-bottom: 1px solid var(--gray-200);
+    margin-bottom: 1rem;
+}
+
+.auth-nav-btn {
+    flex: 1;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--gray-600);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+
+.auth-nav-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}

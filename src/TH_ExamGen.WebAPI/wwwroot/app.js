@@ -4,6 +4,373 @@ let currentMathMatrix = [];
 let currentVietPaper = null;
 let currentMathPaper = null;
 let appSettings = {};
+let currentUser = null;
+let sessionToken = localStorage.getItem("thexam_session_token") || "";
+let deviceId = localStorage.getItem("thexam_device_id") || "";
+if (!deviceId) {
+    deviceId = "DEV-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+    localStorage.setItem("thexam_device_id", deviceId);
+}
+
+// ================= USER AUTH & LICENSE MANAGEMENT =================
+
+async function initAuth() {
+    if (!sessionToken) {
+        updateUserHeaderUI(null);
+        return;
+    }
+    try {
+        const res = await fetch("/api/auth/me", {
+            headers: { "X-Session-Token": sessionToken }
+        });
+        if (res.ok) {
+            currentUser = await res.json();
+            localStorage.setItem("thexam_user_info", JSON.stringify(currentUser));
+            updateUserHeaderUI(currentUser);
+        } else {
+            logoutUser(false);
+        }
+    } catch (e) {
+        const cached = localStorage.getItem("thexam_user_info");
+        if (cached) {
+            try {
+                currentUser = JSON.parse(cached);
+                updateUserHeaderUI(currentUser);
+            } catch (err) {}
+        }
+    }
+}
+
+function updateUserHeaderUI(user) {
+    const guestSec = document.getElementById("guestUserSection");
+    const loggedInSec = document.getElementById("loggedInUserSection");
+    if (!guestSec || !loggedInSec) return;
+
+    if (!user) {
+        guestSec.style.display = "flex";
+        loggedInSec.style.display = "none";
+        return;
+    }
+
+    guestSec.style.display = "none";
+    loggedInSec.style.display = "flex";
+
+    const phoneEl = document.getElementById("headerUserPhone");
+    if (phoneEl) phoneEl.innerText = user.phone;
+    
+    const tierBadge = document.getElementById("headerUserTier");
+    if (tierBadge) {
+        if (user.packageType === "Term") {
+            tierBadge.innerText = "Gói Kỳ";
+            tierBadge.style.background = "#0284c7";
+        } else if (user.packageType === "Year") {
+            tierBadge.innerText = "Gói Năm";
+            tierBadge.style.background = "#15803d";
+        } else if (user.packageType === "School" || user.packageType === "SchoolItem") {
+            tierBadge.innerText = "Gói Trường";
+            tierBadge.style.background = "#7c3aed";
+        } else {
+            tierBadge.innerText = "Dùng Thử";
+            tierBadge.style.background = "#f59e0b";
+        }
+    }
+
+    const quotaEl = document.getElementById("headerUserQuota");
+    if (quotaEl) quotaEl.innerText = `${user.totalQuotaRemaining} đề`;
+
+    const dailyEl = document.getElementById("headerUserDaily");
+    if (dailyEl) dailyEl.innerText = `${user.dailyGeneratedCount}/${user.dailyQuotaLimit}`;
+}
+
+function openAuthModal(tab = "login") {
+    switchAuthTab(tab);
+    document.getElementById("authModal").style.display = "flex";
+}
+
+function closeAuthModal() {
+    document.getElementById("authModal").style.display = "none";
+}
+
+function switchAuthTab(tab) {
+    const isLogin = tab === "login";
+    document.getElementById("authTabLoginBtn").classList.toggle("active", isLogin);
+    document.getElementById("authTabRegBtn").classList.toggle("active", !isLogin);
+    document.getElementById("authLoginForm").style.display = isLogin ? "block" : "none";
+    document.getElementById("authRegisterForm").style.display = isLogin ? "none" : "block";
+}
+
+async function submitLogin() {
+    const phone = document.getElementById("loginPhone").value.trim();
+    const password = document.getElementById("loginPassword").value.trim();
+    if (!phone || !password) {
+        alert("Vui lòng nhập đầy đủ Số điện thoại và Mật khẩu!");
+        return;
+    }
+    showLoading("Đang đăng nhập...");
+    try {
+        const res = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone, password, deviceId })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Đăng nhập thất bại");
+
+        sessionToken = data.token;
+        currentUser = data.user;
+        localStorage.setItem("thexam_session_token", sessionToken);
+        localStorage.setItem("thexam_user_info", JSON.stringify(currentUser));
+
+        updateUserHeaderUI(currentUser);
+        closeAuthModal();
+        alert(`Chào mừng Thầy/Cô ${currentUser.fullName || currentUser.phone} đã đăng nhập thành công!`);
+    } catch (err) {
+        alert("Lỗi đăng nhập: " + err.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function submitRegister() {
+    const fullName = document.getElementById("regFullName").value.trim();
+    const school = document.getElementById("regSchool").value.trim();
+    const phone = document.getElementById("regPhone").value.trim();
+    const password = document.getElementById("regPassword").value.trim();
+
+    if (!phone || !password) {
+        alert("Vui lòng nhập Số điện thoại và Mật khẩu!");
+        return;
+    }
+    if (password.length < 6) {
+        alert("Mật khẩu phải từ 6 ký tự trở lên!");
+        return;
+    }
+
+    showLoading("Đang đăng ký tài khoản & kích hoạt 3 đề dùng thử...");
+    try {
+        const res = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone, password, fullName, school, deviceId })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Đăng ký thất bại");
+
+        sessionToken = data.token;
+        currentUser = data.user;
+        localStorage.setItem("thexam_session_token", sessionToken);
+        localStorage.setItem("thexam_user_info", JSON.stringify(currentUser));
+
+        updateUserHeaderUI(currentUser);
+        closeAuthModal();
+        alert(`Chúc mừng Thầy/Cô đã đăng ký thành công và nhận được 3 lượt tạo đề thi miễn phí!`);
+    } catch (err) {
+        alert("Lỗi đăng ký: " + err.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+function logoutUser(showAlert = true) {
+    sessionToken = "";
+    currentUser = null;
+    localStorage.removeItem("thexam_session_token");
+    localStorage.removeItem("thexam_user_info");
+    updateUserHeaderUI(null);
+    if (showAlert) alert("Đã đăng xuất tài khoản!");
+}
+
+// ================= PRICING & LICENSE ACTIVATION =================
+
+function openPricingModal() {
+    const banner = document.getElementById("pricingUserStatusBanner");
+    if (currentUser) {
+        const expireStr = currentUser.expireAt ? new Date(currentUser.expireAt).toLocaleDateString("vi-VN") : "3 ngày";
+        banner.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <div>
+                    Tài khoản: <strong>${currentUser.phone}</strong> (${currentUser.fullName || 'Giáo viên'}) | Gói: <strong style="color: var(--primary);">${currentUser.packageType}</strong>
+                </div>
+                <div>
+                    Số đề còn lại: <strong style="color: #ea580c; font-size: 1.05rem;">${currentUser.totalQuotaRemaining} đề</strong> (Hôm nay đã sinh: ${currentUser.dailyGeneratedCount}/${currentUser.dailyQuotaLimit})
+                </div>
+            </div>
+            <div style="font-size: 0.78rem; color: var(--gray-600); margin-top: 4px;">
+                Hạn sử dụng: <strong>${expireStr}</strong>
+            </div>
+        `;
+    } else {
+        banner.innerHTML = `
+            <div style="color: #92400e;">
+                ⚠️ Thầy/Cô chưa đăng nhập. Vui lòng <a href="javascript:void(0)" onclick="closePricingModal(); openAuthModal('login');" style="color: var(--primary); font-weight: 700;">Đăng nhập hoặc Đăng ký</a> để nạp mã bản quyền hoặc nhận 3 đề thi dùng thử miễn phí.
+            </div>
+        `;
+    }
+    document.getElementById("pricingModal").style.display = "flex";
+}
+
+function closePricingModal() {
+    document.getElementById("pricingModal").style.display = "none";
+}
+
+async function submitActivateKey() {
+    if (!currentUser || !sessionToken) {
+        alert("Vui lòng đăng nhập tài khoản trước khi nạp Mã kích hoạt!");
+        closePricingModal();
+        openAuthModal("login");
+        return;
+    }
+    const keyCode = document.getElementById("licenseKeyInput").value.trim().toUpperCase();
+    if (!keyCode) {
+        alert("Vui lòng nhập Mã Kích Hoạt!");
+        return;
+    }
+
+    showLoading("Đang kích hoạt mã bản quyền...");
+    try {
+        const res = await fetch("/api/auth/activate-key", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Session-Token": sessionToken
+            },
+            body: JSON.stringify({ keyCode })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Mã kích hoạt không hợp lệ");
+
+        currentUser = data.user;
+        localStorage.setItem("thexam_user_info", JSON.stringify(currentUser));
+        updateUserHeaderUI(currentUser);
+        openPricingModal();
+        document.getElementById("licenseKeyInput").value = "";
+        alert("🎉 " + data.message);
+    } catch (err) {
+        alert("Lỗi nạp mã: " + err.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+// ================= KHO ĐỀ CỦA TÔI (MY EXAMS) =================
+
+async function openMyExamsModal() {
+    if (!currentUser || !sessionToken) {
+        alert("Vui lòng đăng nhập để xem kho đề thi của Thầy/Cô!");
+        openAuthModal("login");
+        return;
+    }
+
+    showLoading("Đang mở kho đề đã tạo...");
+    try {
+        const res = await fetch("/api/user/exams", {
+            headers: { "X-Session-Token": sessionToken }
+        });
+        if (!res.ok) throw new Error("Không thể tải kho đề thi");
+        const list = await res.json();
+        renderMyExamsTable(list);
+        document.getElementById("myExamsModal").style.display = "flex";
+    } catch (err) {
+        alert("Lỗi: " + err.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+function closeMyExamsModal() {
+    document.getElementById("myExamsModal").style.display = "none";
+}
+
+let loadedMyExams = [];
+
+function renderMyExamsTable(exams) {
+    loadedMyExams = exams;
+    const tbody = document.getElementById("myExamsTableBody");
+    tbody.innerHTML = "";
+
+    if (exams.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 24px; color: var(--gray-600);">Thầy/Cô chưa tạo đề thi nào. Khi bấm sinh đề thành công, đề thi sẽ tự động được lưu tại đây!</td></tr>`;
+        return;
+    }
+
+    exams.forEach(ex => {
+        const tr = document.createElement("tr");
+        const dateStr = new Date(ex.createdAt).toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short" });
+        tr.innerHTML = `
+            <td style="text-align: center; font-size: 0.8rem;">${dateStr}</td>
+            <td style="text-align: center;"><span class="badge ${ex.subject === 'Toán' ? 'badge-m2' : 'badge-m1'}">${ex.subject}</span></td>
+            <td style="text-align: center; font-weight: 600;">Lớp ${ex.grade}</td>
+            <td>${ex.period}</td>
+            <td style="font-weight: 600; color: var(--gray-800);">${ex.title || 'Đề kiểm tra định kỳ'}</td>
+            <td style="text-align: center;">
+                <div style="display: flex; gap: 4px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="viewPastExam('${ex.id}')">👁 Xem lại</button>
+                    <button class="btn btn-primary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="downloadPastExam('${ex.id}', 'exam')">📥 Word Đề</button>
+                    <button class="btn btn-success btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="downloadPastExam('${ex.id}', 'full')">📥 Trọn Bộ</button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function viewPastExam(id) {
+    const item = loadedMyExams.find(x => x.id === id);
+    if (!item) return;
+
+    try {
+        const paper = JSON.parse(item.examDataJson);
+        closeMyExamsModal();
+
+        if (item.subject === "Tiếng Việt") {
+            switchTab("viet");
+            currentVietPaper = paper;
+            renderVietExamPreview(paper);
+            document.getElementById("btnExportVietExam").disabled = false;
+            document.getElementById("btnExportVietFull").disabled = false;
+        } else {
+            switchTab("math");
+            currentMathPaper = paper;
+            renderMathExamPreview(paper);
+            document.getElementById("btnExportMathExam").disabled = false;
+            document.getElementById("btnExportMathFull").disabled = false;
+        }
+
+        const targetId = item.subject === "Tiếng Việt" ? "vietPreviewArea" : "mathPreviewArea";
+        const el = document.getElementById(targetId);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+    } catch (e) {
+        alert("Lỗi phân tích dữ liệu đề thi: " + e.message);
+    }
+}
+
+async function downloadPastExam(id, type) {
+    const item = loadedMyExams.find(x => x.id === id);
+    if (!item) return;
+
+    showLoading("Đang kết xuất file Word từ kho lưu trữ (miễn phí không tốn lượt)...");
+    try {
+        const paper = JSON.parse(item.examDataJson);
+        const isViet = item.subject === "Tiếng Việt";
+        const endpoint = isViet
+            ? (type === "exam" ? "/api/export/viet/exam" : "/api/export/viet/full")
+            : (type === "exam" ? "/api/export/math/exam" : "/api/export/math/full");
+
+        const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ paper, skipValidation: false })
+        });
+        if (!res.ok) throw new Error("Xuất file Word thất bại");
+        const blob = await res.blob();
+        const filename = `${type === 'exam' ? 'DeThi' : 'TronBo'}_${isViet ? 'TiengViet' : 'Toan'}_Lop${paper.khoiLop}.docx`;
+        downloadBlob(blob, filename);
+    } catch (err) {
+        alert("Lỗi: " + err.message);
+    } finally {
+        hideLoading();
+    }
+}
 
 // Helper: Show/Hide Loading
 function showLoading(msg = "Đang xử lý, vui lòng chờ...") {
@@ -196,6 +563,12 @@ async function exportVietMatrix() {
 }
 
 async function generateVietExam() {
+    if (!currentUser || !sessionToken) {
+        alert("Vui lòng Đăng nhập hoặc Đăng ký (nhận 3 đề dùng thử miễn phí) để tạo đề thi!");
+        openAuthModal("login");
+        return;
+    }
+
     const grade = parseInt(document.getElementById("vietGradeSelect").value);
     const period = document.getElementById("vietPeriodSelect").value;
     const isAiPassage = document.querySelector('input[name="vietPassageMode"]:checked').value === 'ai';
@@ -223,7 +596,10 @@ async function generateVietExam() {
     try {
         const res = await fetch("/api/ai/viet/generate-exam", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "X-Session-Token": sessionToken
+            },
             body: JSON.stringify({
                 grade,
                 period,
@@ -235,7 +611,22 @@ async function generateVietExam() {
         });
 
         if (!res.ok) {
-            const err = await res.json();
+            const err = await res.json().catch(() => ({}));
+            if (res.status === 401) {
+                alert("Phiên đăng nhập đã hết hạn hoặc tài khoản được đăng nhập ở thiết bị khác. Vui lòng đăng nhập lại.");
+                logoutUser(false);
+                openAuthModal("login");
+                return;
+            }
+            if (res.status === 402) {
+                alert(err.error || "Bạn đã dùng hết số đề trong gói. Vui lòng nạp Mã kích hoạt hoặc nâng cấp gói bản quyền!");
+                openPricingModal();
+                return;
+            }
+            if (res.status === 429) {
+                alert(err.error || "Hệ thống đang bận hoặc bạn đã chạm giới hạn ngày / thời gian chờ. Vui lòng thử lại sau giây lát.");
+                return;
+            }
             throw new Error(err.error || "Không thể sinh đề thi");
         }
 
@@ -244,6 +635,7 @@ async function generateVietExam() {
 
         document.getElementById("btnExportVietExam").disabled = false;
         document.getElementById("btnExportVietFull").disabled = false;
+        initAuth();
     } catch (err) {
         alert("Lỗi sinh đề: " + err.message);
     } finally {
@@ -477,6 +869,12 @@ async function exportMathMatrix() {
 }
 
 async function generateMathExam() {
+    if (!currentUser || !sessionToken) {
+        alert("Vui lòng Đăng nhập hoặc Đăng ký (nhận 3 đề dùng thử miễn phí) để tạo đề thi!");
+        openAuthModal("login");
+        return;
+    }
+
     const grade = parseInt(document.getElementById("mathGradeSelect").value);
     const period = document.getElementById("mathPeriodSelect").value;
 
@@ -484,7 +882,10 @@ async function generateMathExam() {
     try {
         const res = await fetch("/api/ai/math/generate-exam", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "X-Session-Token": sessionToken
+            },
             body: JSON.stringify({
                 grade,
                 period,
@@ -494,7 +895,22 @@ async function generateMathExam() {
         });
 
         if (!res.ok) {
-            const err = await res.json();
+            const err = await res.json().catch(() => ({}));
+            if (res.status === 401) {
+                alert("Phiên đăng nhập đã hết hạn hoặc tài khoản được đăng nhập ở thiết bị khác. Vui lòng đăng nhập lại.");
+                logoutUser(false);
+                openAuthModal("login");
+                return;
+            }
+            if (res.status === 402) {
+                alert(err.error || "Bạn đã dùng hết số đề trong gói. Vui lòng nạp Mã kích hoạt hoặc nâng cấp gói bản quyền!");
+                openPricingModal();
+                return;
+            }
+            if (res.status === 429) {
+                alert(err.error || "Hệ thống đang bận hoặc bạn đã chạm giới hạn ngày / thời gian chờ. Vui lòng thử lại sau giây lát.");
+                return;
+            }
             throw new Error(err.error || "Không thể sinh đề thi");
         }
 
@@ -503,6 +919,7 @@ async function generateMathExam() {
 
         document.getElementById("btnExportMathExam").disabled = false;
         document.getElementById("btnExportMathFull").disabled = false;
+        initAuth();
     } catch (err) {
         alert("Lỗi sinh đề: " + err.message);
     } finally {
@@ -926,6 +1343,7 @@ function closePpctModal() {
 
 // Initial Load
 document.addEventListener("DOMContentLoaded", () => {
+    initAuth();
     loadVietCurriculum();
     loadMathCurriculum();
 });

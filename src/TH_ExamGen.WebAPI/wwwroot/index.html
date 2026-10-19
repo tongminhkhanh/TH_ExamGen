@@ -18,8 +18,26 @@
                 </h1>
                 <div class="subtitle">Hệ thống sinh ma trận, bản đặc tả & đề thi Tiểu học chuẩn GDPT 2018 (Kết nối tri thức)</div>
             </div>
-            <div class="header-actions">
-                <button class="btn btn-secondary btn-sm" onclick="openSettingsModal()">⚙ Cấu hình trường & API</button>
+            <div class="header-actions" id="userHeaderActions">
+                <!-- Trạng thái Chưa đăng nhập -->
+                <div id="guestUserSection" style="display: flex; gap: 8px; align-items: center;">
+                    <button class="btn btn-outline-light btn-sm" onclick="openPricingModal()">💎 Gói Bản Quyền</button>
+                    <button class="btn btn-primary-light btn-sm" onclick="openAuthModal('login')" style="font-weight: 600;">🔑 Đăng nhập / Đăng ký</button>
+                    <button class="btn btn-secondary btn-sm" onclick="openSettingsModal()">⚙ Cấu hình trường</button>
+                </div>
+                <!-- Trạng thái Đã đăng nhập -->
+                <div id="loggedInUserSection" style="display: none; gap: 8px; align-items: center;">
+                    <div class="user-quota-badge" onclick="openPricingModal()" title="Nhấn để xem chi tiết hạn mức / nạp thêm" style="cursor: pointer; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.35); border-radius: 6px; padding: 4px 10px; font-size: 0.8rem; color: #fff; display: flex; align-items: center; gap: 6px;">
+                        <span id="headerUserPhone" style="font-weight: 600;">09...</span>
+                        <span id="headerUserTier" class="badge" style="background: #f59e0b; color: #fff; font-size: 0.7rem; padding: 1px 6px; border-radius: 4px;">Gói Thử</span>
+                        <span>Còn: <strong id="headerUserQuota" style="color: #67e8f9;">3 đề</strong></span>
+                        <span style="opacity: 0.85;">(Hôm nay: <strong id="headerUserDaily">0/5</strong>)</span>
+                    </div>
+                    <button class="btn btn-outline-light btn-sm" onclick="openMyExamsModal()" title="Xem lại các đề đã sinh mà không tốn lượt">📂 Kho đề của tôi</button>
+                    <button class="btn btn-success btn-sm" onclick="openPricingModal()" title="Nâng cấp gói bản quyền hoặc nạp mã">💎 Nạp Key</button>
+                    <button class="btn btn-secondary btn-sm" onclick="openSettingsModal()" title="Cấu hình tên trường hiển thị trên đề thi">⚙ Trường</button>
+                    <button class="btn btn-secondary btn-sm" onclick="logoutUser()" title="Đăng xuất tài khoản">🚪</button>
+                </div>
             </div>
         </div>
     </header>
@@ -399,6 +417,206 @@
                 <div style="text-align: right; margin-top: 1rem;">
                     <button class="btn btn-secondary" onclick="closePpctModal()">Đóng</button>
                 </div>
+            </div>
+        </div>
+    <!-- ================= MODAL TÀI KHOẢN GIÁO VIÊN ================= -->
+    <div class="modal" id="authModal">
+        <div class="modal-content" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3 style="font-size: 1.15rem; font-weight: 700;">Tài Khoản Giáo Viên</h3>
+                <button class="modal-close" onclick="closeAuthModal()">&times;</button>
+            </div>
+            
+            <div class="auth-nav">
+                <button class="auth-nav-btn active" id="authTabLoginBtn" onclick="switchAuthTab('login')">🔑 Đăng Nhập</button>
+                <button class="auth-nav-btn" id="authTabRegBtn" onclick="switchAuthTab('register')">🎉 Đăng Ký (Nhận 3 Đề)</button>
+            </div>
+
+            <!-- Form Đăng Nhập -->
+            <div id="authLoginForm">
+                <div class="field">
+                    <label>Số điện thoại:</label>
+                    <input type="tel" id="loginPhone" placeholder="Ví dụ: 0912345678" style="padding: 8px 10px; border: 1px solid var(--gray-300); border-radius: 6px;">
+                </div>
+                <div class="field">
+                    <label>Mật khẩu:</label>
+                    <input type="password" id="loginPassword" placeholder="Nhập mật khẩu" style="padding: 8px 10px; border: 1px solid var(--gray-300); border-radius: 6px;">
+                </div>
+                <div style="margin-top: 1rem;">
+                    <button class="btn btn-primary" style="width: 100%; justify-content: center; padding: 10px;" onclick="submitLogin()">🔑 Đăng Nhập Ngay</button>
+                </div>
+                <div style="text-align: center; margin-top: 12px; font-size: 0.85rem; color: var(--gray-600);">
+                    Chưa có tài khoản? <a href="javascript:void(0)" onclick="switchAuthTab('register')" style="color: var(--primary); font-weight: 600;">Đăng ký nhận 3 đề miễn phí</a>
+                </div>
+            </div>
+
+            <!-- Form Đăng Ký -->
+            <div id="authRegisterForm" style="display: none;">
+                <div class="field">
+                    <label>Họ và tên thầy/cô:</label>
+                    <input type="text" id="regFullName" placeholder="Ví dụ: Thầy/Cô Nguyễn Văn A" style="padding: 8px 10px; border: 1px solid var(--gray-300); border-radius: 6px;">
+                </div>
+                <div class="field">
+                    <label>Trường Tiểu học công tác:</label>
+                    <input type="text" id="regSchool" placeholder="Ví dụ: TH Chu Văn An" style="padding: 8px 10px; border: 1px solid var(--gray-300); border-radius: 6px;">
+                </div>
+                <div class="field">
+                    <label>Số điện thoại (dùng đăng nhập):</label>
+                    <input type="tel" id="regPhone" placeholder="Ví dụ: 0912345678" style="padding: 8px 10px; border: 1px solid var(--gray-300); border-radius: 6px;">
+                </div>
+                <div class="field">
+                    <label>Mật khẩu (từ 6 ký tự):</label>
+                    <input type="password" id="regPassword" placeholder="Tạo mật khẩu" style="padding: 8px 10px; border: 1px solid var(--gray-300); border-radius: 6px;">
+                </div>
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 8px 10px; font-size: 0.8rem; color: #166534; margin-bottom: 12px;">
+                    🎁 <strong>Ưu đãi:</strong> Đăng ký nhận ngay 3 đề thi trọn bộ miễn phí. Mỗi thiết bị áp dụng tối đa cho 2 tài khoản.
+                </div>
+                <div>
+                    <button class="btn btn-success" style="width: 100%; justify-content: center; padding: 10px;" onclick="submitRegister()">🎉 Đăng Ký &amp; Nhận 3 Đề Dùng Thử</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL BẢN QUYỀN & BẢNG GIÁ ================= -->
+    <div class="modal" id="pricingModal">
+        <div class="modal-content" style="max-width: 820px;">
+            <div class="modal-header">
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--primary);">💎 Quản Lý Bản Quyền &amp; Nâng Cấp Gói</h3>
+                <button class="modal-close" onclick="closePricingModal()">&times;</button>
+            </div>
+
+            <!-- Banner trạng thái hiện tại -->
+            <div id="pricingUserStatusBanner" style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 10px 14px; margin-bottom: 1rem; font-size: 0.875rem;">
+                <!-- Rendered dynamically -->
+            </div>
+
+            <!-- Ô Nạp Mã Kích Hoạt -->
+            <div style="background: #ffffff; border: 1px solid var(--gray-300); border-radius: 8px; padding: 14px; margin-bottom: 1.25rem;">
+                <label style="font-size: 0.875rem; font-weight: 700; color: var(--gray-800); display: block; margin-bottom: 6px;">
+                    🔑 Thầy/Cô đã có Mã Kích Hoạt? Nhập mã tại đây để kích hoạt tức thì:
+                </label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="licenseKeyInput" placeholder="Ví dụ: THEX-2026-NAM-XXXX-YYYY" style="flex: 1; padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 6px; font-family: monospace; font-size: 0.95rem; text-transform: uppercase;">
+                    <button class="btn btn-primary" onclick="submitActivateKey()">⚡ Kích Hoạt Ngay</button>
+                </div>
+            </div>
+
+            <!-- Bảng giá 3 gói -->
+            <div style="margin-bottom: 1.25rem;">
+                <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--gray-700); margin-bottom: 6px;">Bảng giá các gói bản quyền TH_ExamGen:</h4>
+                <div class="pricing-grid">
+                    <!-- Gói Học Kỳ -->
+                    <div class="pricing-card">
+                        <div>
+                            <div class="pricing-title">Gói Học Kỳ</div>
+                            <div style="font-size: 0.78rem; color: var(--gray-600); margin-bottom: 6px;">Thời hạn 5 tháng (1 kỳ học)</div>
+                            <div class="pricing-price">149.000đ</div>
+                            <ul class="pricing-features">
+                                <li><strong>35 đề thi trọn bộ</strong></li>
+                                <li>Tối đa 5 đề/ngày</li>
+                                <li>Đầy đủ Ma trận, Bản đặc tả &amp; Hướng dẫn chấm</li>
+                                <li>Kho lưu trữ đề cũ vĩnh viễn</li>
+                                <li>Tải file Word (.docx) không giới hạn</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Gói Cả Năm (Bán chạy nhất) -->
+                    <div class="pricing-card popular">
+                        <div class="popular-badge">Khuyên Dùng</div>
+                        <div>
+                            <div class="pricing-title" style="color: var(--primary);">Gói Cả Năm</div>
+                            <div style="font-size: 0.78rem; color: var(--gray-600); margin-bottom: 6px;">Thời hạn 12 tháng (Trọn năm học)</div>
+                            <div class="pricing-price" style="color: #ea580c;">249.000đ</div>
+                            <ul class="pricing-features">
+                                <li><strong>90 đề thi trọn bộ</strong></li>
+                                <li>Tối đa 8 đề/ngày</li>
+                                <li>Đủ cả 4 đợt kiểm tra định kỳ (Giữa kỳ + Cuối kỳ)</li>
+                                <li>Ưu tiên tốc độ xử lý AI</li>
+                                <li>Hỗ trợ kỹ thuật 1-1 qua Zalo</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Gói Tổ Chuyên Môn / Trường -->
+                    <div class="pricing-card">
+                        <div>
+                            <div class="pricing-title">Gói Trường / Tổ Chuyên Môn</div>
+                            <div style="font-size: 0.78rem; color: var(--gray-600); margin-bottom: 6px;">12 tháng - Dành cho nhóm GV</div>
+                            <div class="pricing-price">699.000đ</div>
+                            <ul class="pricing-features">
+                                <li><strong>300 đề thi</strong> (Combo 5 mã kích hoạt)</li>
+                                <li>Mỗi giáo viên dùng 1 mã độc lập (60 đề/mã)</li>
+                                <li>Không lo bị đá văng phiên nhau</li>
+                                <li>Tổ trưởng tự phát mã cho đồng nghiệp</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Box Chuyển khoản VietQR & Zalo Admin -->
+            <div style="background: #f8fafc; border: 1px solid var(--gray-300); border-radius: 8px; padding: 14px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center;">
+                <div style="flex: 1; min-width: 260px;">
+                    <div style="font-weight: 700; font-size: 0.9rem; color: var(--gray-800); margin-bottom: 6px;">
+                        📲 Hướng dẫn Mua Bản Quyền &amp; Kích Hoạt Nhanh:
+                    </div>
+                    <div style="font-size: 0.825rem; color: var(--gray-700); line-height: 1.6;">
+                        1. Quét mã QR hoặc chuyển khoản theo số tài khoản bên cạnh.<br>
+                        2. Nội dung chuyển khoản: <strong style="color: var(--primary); background: #e0f2fe; padding: 2px 6px; border-radius: 4px;">THEX [Số điện thoại của bạn]</strong><br>
+                        3. Bấm nút Zalo bên dưới để nhắn Admin gửi Mã kích hoạt ngay trong 2-5 phút!
+                    </div>
+                    <div style="margin-top: 10px; display: flex; gap: 8px;">
+                        <a href="https://zalo.me/0326439774" target="_blank" class="btn btn-primary btn-sm" style="background: #0284c7; border-color: #0284c7; text-decoration: none;">
+                            💬 Nhắn Zalo Admin Cấp Key Nhanh (0326.439.774)
+                        </a>
+                    </div>
+                </div>
+                <div style="text-align: center; background: #ffffff; padding: 8px; border-radius: 8px; border: 1px solid var(--gray-200);">
+                    <img src="https://img.vietqr.io/image/MB-0326439774-compact2.png?amount=249000&addInfo=THEX%20BAN%20QUYEN&accountName=TONG%20MINH%20KHANH" alt="VietQR Thanh Toán" style="width: 140px; height: 140px; display: block; border-radius: 4px;">
+                    <div style="font-size: 0.725rem; color: var(--gray-600); margin-top: 4px;">Quét VietQR chuyển khoản</div>
+                </div>
+            </div>
+
+            <div style="text-align: right; margin-top: 1rem;">
+                <button class="btn btn-secondary" onclick="closePricingModal()">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL KHO ĐỀ ĐÃ TẠO ================= -->
+    <div class="modal" id="myExamsModal">
+        <div class="modal-content" style="max-width: 960px;">
+            <div class="modal-header">
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--primary);">📂 Kho Đề Đã Tạo Của Tôi (Xem lại &amp; Tải Word miễn phí)</h3>
+                <button class="modal-close" onclick="closeMyExamsModal()">&times;</button>
+            </div>
+            
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; font-size: 0.85rem; color: #166534;">
+                💡 <strong>Tiết kiệm lượt tạo đề:</strong> Mọi đề thi đã tạo thành công đều được lưu tự động tại đây. Thầy/Cô có thể bấm <strong>"Xem lại"</strong> để nạp lại vào bảng xem trước hoặc bấm <strong>"Tải Word"</strong> bất cứ lúc nào mà không tốn thêm lượt sinh đề mới.
+            </div>
+
+            <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
+                <table class="matrix-table" id="myExamsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 130px; text-align: center;">Thời gian</th>
+                            <th style="width: 90px; text-align: center;">Môn</th>
+                            <th style="width: 60px; text-align: center;">Khối</th>
+                            <th style="width: 130px;">Kỳ kiểm tra</th>
+                            <th>Tiêu đề đề thi</th>
+                            <th style="width: 220px; text-align: center;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="myExamsTableBody">
+                        <!-- Rendered by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="text-align: right; margin-top: 1rem;">
+                <button class="btn btn-secondary" onclick="closeMyExamsModal()">Đóng</button>
             </div>
         </div>
     </div>

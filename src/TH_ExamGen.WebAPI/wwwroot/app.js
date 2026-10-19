@@ -667,47 +667,128 @@ async function saveSettings() {
 let currentSuggestSubject = "viet";
 let currentPpctData = [];
 
+function onSuggestModeChange() {
+    const mode = document.querySelector('input[name="suggestMode"]:checked')?.value || "mode1";
+    document.getElementById("suggestContainerMode1").style.display = mode === "mode1" ? "block" : "none";
+    document.getElementById("suggestContainerMode2").style.display = mode === "mode2" ? "block" : "none";
+    document.getElementById("suggestContainerMode3").style.display = mode === "mode3" ? "block" : "none";
+
+    if (mode === "mode3") {
+        document.getElementById("suggestCustomTextarea").focus();
+    }
+}
+
+function updateSuggestTopicCounter() {
+    const cbs = document.querySelectorAll('.suggest-topic-cb');
+    const checked = document.querySelectorAll('.suggest-topic-cb:checked');
+    const counter = document.getElementById("suggestTopicCounter");
+    if (counter) {
+        counter.innerText = `Đã chọn: ${checked.length}/${cbs.length} bài học`;
+    }
+}
+
+function selectAllSuggestTopics() {
+    document.querySelectorAll('.suggest-topic-cb').forEach(cb => cb.checked = true);
+    updateSuggestTopicCounter();
+}
+
+function deselectAllSuggestTopics() {
+    document.querySelectorAll('.suggest-topic-cb').forEach(cb => cb.checked = false);
+    updateSuggestTopicCounter();
+}
+
+function defaultSuggestTopics() {
+    document.querySelectorAll('.suggest-topic-cb').forEach(cb => {
+        cb.checked = cb.getAttribute("data-default") === "true";
+    });
+    updateSuggestTopicCounter();
+}
+
 async function openSuggestModal(subject) {
     currentSuggestSubject = subject;
     const grade = document.getElementById(`${subject}GradeSelect`).value;
     const period = document.getElementById(`${subject}PeriodSelect`).value;
     const subName = subject === "viet" ? "Môn Tiếng Việt" : "Môn Toán";
 
+    // Mở modal ngay lập tức để người dùng có phản hồi thị giác
+    document.getElementById("suggestModal").style.display = "flex";
     document.getElementById("suggestModalTitle").innerText = `AI Gợi ý Ma trận & Bản đặc tả - ${subName} Lớp ${grade} (${period})`;
-    document.getElementById("suggestRequirementInput").value = "";
-    document.querySelector('input[name="suggestMode"][value="auto"]').checked = true;
-    toggleSuggestTopicSelection();
 
-    showLoading("Đang tải danh mục phân phối chương trình (PPCT)...");
+    // Reset về Chế độ 1 mặc định
+    document.getElementById("suggestMode1").checked = true;
+    onSuggestModeChange();
+
+    // Điền mô tả tự động cho Cách 2
+    if (subject === "math") {
+        document.getElementById("suggestAutoDesc").innerHTML = `
+            <strong>Cách 2 - AI tự động phân bổ:</strong><br>
+            AI sẽ bám sát phân phối chương trình đợt <em>"${period}"</em>, tự chọn các chủ đề trọng tâm cho đề Toán lớp ${grade} (thầy/cô không cần chọn thủ công), phủ đủ 3 mạch kiến thức (Số &amp; phép tính, Hình học &amp; đo lường, Thống kê &amp; xác suất) và giữ nguyên cấu trúc chuẩn (10 câu: 7 TN + 3 TL, tổng 10 điểm).
+        `;
+        document.getElementById("suggestCustomTextarea").value = 
+            `Đề kiểm tra ${period} môn Toán lớp ${grade} sách Kết nối tri thức. Đảm bảo cấu trúc 10 câu (7 TN, 3 TL), tổng điểm 10 điểm, phân bổ M1 40%, M2 30%, M3 30%. Có câu hỏi hình vẽ trực quan.`;
+    } else {
+        document.getElementById("suggestAutoDesc").innerHTML = `
+            <strong>Cách 2 - AI tự động phân bổ:</strong><br>
+            AI sẽ bám sát phân phối chương trình đợt <em>"${period}"</em>, tự chọn chủ điểm bài đọc và các bài Luyện từ &amp; câu trọng tâm cho Tiếng Việt lớp ${grade} (thầy/cô không cần chọn thủ công), phủ đủ cấu trúc chuẩn 11 câu (7 câu đọc hiểu + 4 câu kiến thức TV, tổng 8 điểm).
+        `;
+        document.getElementById("suggestCustomTextarea").value = 
+            `Đề kiểm tra ${period} môn Tiếng Việt lớp ${grade} sách Kết nối tri thức. Đảm bảo cấu trúc 11 câu (7 câu đọc hiểu, 4 câu kiến thức Tiếng Việt), tổng 8 điểm.`;
+    }
+
+    const counter = document.getElementById("suggestTopicCounter");
+    counter.innerText = "⏳ Đang nạp danh mục PPCT...";
+    const listDiv = document.getElementById("suggestTopicsList");
+    listDiv.innerHTML = `<div style="text-align: center; padding: 20px; color: var(--gray-600);">Đang tải dữ liệu phân phối chương trình...</div>`;
+
     try {
         const res = await fetch(`/api/curriculum/${subject}/ppct?grade=${grade}&period=${encodeURIComponent(period)}`);
         if (!res.ok) throw new Error("Không thể tải danh mục PPCT");
         const data = await res.json();
         currentPpctData = data.topics || [];
 
-        const listDiv = document.getElementById("suggestTopicsList");
         listDiv.innerHTML = "";
-        currentPpctData.forEach((t) => {
-            const row = document.createElement("label");
-            row.style.display = "flex";
-            row.style.alignItems = "flex-start";
-            row.style.gap = "6px";
-            row.style.marginBottom = "6px";
-            row.style.fontSize = "0.85rem";
-            row.style.cursor = "pointer";
+        if (currentPpctData.length === 0) {
+            listDiv.innerHTML = `<div style="padding: 10px; color: var(--gray-600);">Chưa có danh mục chủ đề cho đợt kiểm tra này.</div>`;
+            counter.innerText = "0/0";
+            return;
+        }
 
-            row.innerHTML = `
-                <input type="checkbox" value="${t.noiDung || t.chuDe}" class="suggest-topic-cb" style="margin-top: 3px;">
-                <span><strong>[${t.tuan || 'Tuần'}]</strong> ${t.chuDe}: ${t.noiDung}</span>
-            `;
-            listDiv.appendChild(row);
+        // Nhóm theo Mạch kiến thức
+        const groups = {};
+        currentPpctData.forEach(t => {
+            const strand = t.machKienThuc || "Chủ đề chung";
+            if (!groups[strand]) groups[strand] = [];
+            groups[strand].push(t);
         });
 
-        document.getElementById("suggestModal").style.display = "flex";
+        Object.keys(groups).forEach(strand => {
+            const header = document.createElement("div");
+            header.style.cssText = "background: #f1f5f9; padding: 4px 8px; border-radius: 4px; margin: 8px 0 4px 0; font-weight: 700; font-size: 0.82rem; color: #1e293b;";
+            header.innerText = `📌 ${strand} (${groups[strand].length} bài học)`;
+            listDiv.appendChild(header);
+
+            groups[strand].forEach(t => {
+                const row = document.createElement("label");
+                row.style.cssText = "display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 0.825rem; cursor: pointer; padding: 3px 6px; border-radius: 4px;";
+                row.onmouseover = () => row.style.background = "#f8fafc";
+                row.onmouseout = () => row.style.background = "transparent";
+
+                const isDefault = t.daXacNhan !== false;
+                row.innerHTML = `
+                    <input type="checkbox" value="${t.maMuc}" data-default="${isDefault}" class="suggest-topic-cb" ${isDefault ? 'checked' : ''} onchange="updateSuggestTopicCounter()" style="margin-top: 3px;">
+                    <div>
+                        <span style="color: #0284c7; font-weight: 600;">[Tuần ${t.tuan || '?'}]</span>
+                        <strong style="color: #334155;">${t.chuDe}:</strong> ${t.noiDung}
+                    </div>
+                `;
+                listDiv.appendChild(row);
+            });
+        });
+
+        updateSuggestTopicCounter();
     } catch (err) {
-        alert("Lỗi: " + err.message);
-    } finally {
-        hideLoading();
+        listDiv.innerHTML = `<div style="color: red; padding: 10px;">Lỗi tải dữ liệu: ${err.message}</div>`;
+        counter.innerText = "Lỗi kết nối";
     }
 }
 
@@ -715,26 +796,40 @@ function closeSuggestModal() {
     document.getElementById("suggestModal").style.display = "none";
 }
 
-function toggleSuggestTopicSelection() {
-    const isAuto = document.querySelector('input[name="suggestMode"]:checked').value === "auto";
-    document.getElementById("suggestTopicsContainer").style.display = isAuto ? "none" : "block";
-}
-
 async function submitSuggestMatrix() {
     const subject = currentSuggestSubject;
     const grade = parseInt(document.getElementById(`${subject}GradeSelect`).value);
     const period = document.getElementById(`${subject}PeriodSelect`).value;
-    const isAuto = document.querySelector('input[name="suggestMode"]:checked').value === "auto";
-    const requirement = document.getElementById("suggestRequirementInput").value.trim();
+    const mode = document.querySelector('input[name="suggestMode"]:checked')?.value || "mode1";
 
-    let selectedTopics = [];
-    if (!isAuto) {
+    let autoSelectTopics = false;
+    let selectedTopics = null;
+    let requirement = "";
+
+    if (mode === "mode1") {
+        // Cách 1: Tích chọn chủ đề từ PPCT
         const cbs = document.querySelectorAll('.suggest-topic-cb:checked');
-        cbs.forEach(cb => selectedTopics.push(cb.value));
+        selectedTopics = Array.from(cbs).map(cb => cb.value);
         if (selectedTopics.length === 0) {
-            alert("Vui lòng tích chọn ít nhất 1 bài học/chủ điểm từ danh mục PPCT!");
+            alert("Vui lòng tích chọn ít nhất 1 bài học/chủ điểm từ danh mục PPCT (Cách 1)!");
             return;
         }
+        autoSelectTopics = false;
+        requirement = "";
+    } else if (mode === "mode2") {
+        // Cách 2: Để AI tự chọn bám sát PPCT
+        autoSelectTopics = true;
+        selectedTopics = null;
+        requirement = "";
+    } else {
+        // Cách 3: Nhập định hướng / yêu cầu riêng
+        requirement = document.getElementById("suggestCustomTextarea").value.trim();
+        if (!requirement) {
+            alert("Vui lòng nhập định hướng kiểm tra hoặc yêu cầu riêng của thầy/cô (Cách 3)!");
+            return;
+        }
+        autoSelectTopics = false;
+        selectedTopics = null;
     }
 
     closeSuggestModal();
@@ -748,8 +843,8 @@ async function submitSuggestMatrix() {
                 grade,
                 period,
                 requirement,
-                autoSelectTopics: isAuto,
-                selectedTopics: isAuto ? null : selectedTopics
+                autoSelectTopics,
+                selectedTopics
             })
         });
 
@@ -782,33 +877,46 @@ async function openPpctModal(subject) {
     const period = document.getElementById(`${subject}PeriodSelect`).value;
     const subName = subject === "viet" ? "Môn Tiếng Việt" : "Môn Toán";
 
+    // Mở modal ngay lập tức
+    document.getElementById("ppctModal").style.display = "flex";
     document.getElementById("ppctModalTitle").innerText = `Phân phối chương trình (PPCT) - ${subName} Lớp ${grade} (${period})`;
 
-    showLoading("Đang tải danh mục PPCT...");
+    const tbody = document.getElementById("ppctTableBody");
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 25px; color: var(--gray-600);">⏳ Đang tải dữ liệu phân phối chương trình...</td></tr>`;
+
     try {
         const res = await fetch(`/api/curriculum/${subject}/ppct?grade=${grade}&period=${encodeURIComponent(period)}`);
         if (!res.ok) throw new Error("Không thể tải danh mục PPCT");
         const data = await res.json();
 
-        const tbody = document.getElementById("ppctTableBody");
         tbody.innerHTML = "";
+        const list = data.topics || [];
+        if (list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px; color: var(--gray-600);">Chưa có dữ liệu PPCT cho đợt này.</td></tr>`;
+            return;
+        }
 
-        (data.topics || []).forEach(t => {
+        list.forEach(t => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td style="text-align: center; font-weight: 600;">${t.tuan || ''}</td>
                 <td><span class="badge badge-m1">${t.machKienThuc || ''}</span></td>
                 <td><strong>${t.chuDe || ''}</strong></td>
-                <td>${t.noiDung || ''} ${t.yeuCauCanDatM1 ? `<br><small style="color: #475569;">• M1: ${t.yeuCauCanDatM1}<br>• M2: ${t.yeuCauCanDatM2}<br>• M3: ${t.yeuCauCanDatM3}</small>` : ''}</td>
+                <td>
+                    ${t.noiDung || ''}
+                    ${t.yeuCauCanDatM1 ? `
+                        <div style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--gray-200); font-size: 0.8rem; color: #475569;">
+                            <div>• <strong>M1:</strong> ${t.yeuCauCanDatM1}</div>
+                            <div>• <strong>M2:</strong> ${t.yeuCauCanDatM2}</div>
+                            <div>• <strong>M3:</strong> ${t.yeuCauCanDatM3}</div>
+                        </div>
+                    ` : ''}
+                </td>
             `;
             tbody.appendChild(tr);
         });
-
-        document.getElementById("ppctModal").style.display = "flex";
     } catch (err) {
-        alert("Lỗi: " + err.message);
-    } finally {
-        hideLoading();
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px; color: red;">Lỗi tải dữ liệu: ${err.message}</td></tr>`;
     }
 }
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TH_ExamGen Web - Hệ Thống Soạn Ma Trận & Đề Thi Tiểu Học GDPT 2018</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2.2">
 </head>
 <body>
 
@@ -301,36 +301,65 @@
         </div>
     <!-- Modal Gợi ý Ma trận & Bản đặc tả theo PPCT -->
     <div class="modal" id="suggestModal">
-        <div class="modal-content" style="max-width: 750px;">
+        <div class="modal-content" style="max-width: 780px;">
             <div class="modal-header">
                 <h3 id="suggestModalTitle" style="font-size: 1.15rem; font-weight: 700;">AI Gợi ý Ma trận &amp; Bản đặc tả</h3>
                 <button class="modal-close" onclick="closeSuggestModal()">&times;</button>
             </div>
             <div>
-                <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 0.85rem; color: #1e40af;">
-                    💡 Hệ thống tự động đối chiếu với <strong>Phân phối chương trình (PPCT) Chuẩn GDPT 2018 (SGK Kết nối tri thức)</strong>. AI sẽ chỉ lập ma trận và đặc tả bám sát đúng khối lớp và kỳ kiểm tra hiện tại.
+                <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 10px 12px; border-radius: 6px; margin-bottom: 14px; font-size: 0.85rem; color: #1e40af;">
+                    💡 Hệ thống tự động đối chiếu với <strong>Phân phối chương trình (PPCT) Chuẩn GDPT 2018 (SGK Kết nối tri thức)</strong>. AI sẽ chỉ lập ma trận và bản đặc tả bám sát đúng khối lớp và kỳ kiểm tra hiện tại.
                 </div>
 
-                <div style="margin-bottom: 12px;">
-                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin-bottom: 6px;">
-                        <input type="radio" name="suggestMode" value="auto" checked onchange="toggleSuggestTopicSelection()">
-                        <strong>Chế độ 1: AI tự động phân bổ đều các mạch kiến thức theo PPCT</strong>
+                <div style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 6px 10px; border-radius: 6px; background: #f8fafc; border: 1px solid #e2e8f0;">
+                        <input type="radio" name="suggestMode" id="suggestMode1" value="mode1" checked onchange="onSuggestModeChange()">
+                        <div>
+                            <strong style="color: #0f172a;">Cách 1: Tích chọn chủ đề từ SGK Kết nối tri thức (Khuyên dùng)</strong>
+                            <div style="font-size: 0.78rem; color: #64748b;">Thầy/cô chủ động tích chọn các bài học / chủ điểm trọng tâm từ danh mục PPCT đã học.</div>
+                        </div>
                     </label>
-                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                        <input type="radio" name="suggestMode" value="manual" onchange="toggleSuggestTopicSelection()">
-                        <strong>Chế độ 2: Giáo viên tự tích chọn bài học / chủ điểm từ danh mục PPCT</strong>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 6px 10px; border-radius: 6px; background: #f8fafc; border: 1px solid #e2e8f0;">
+                        <input type="radio" name="suggestMode" id="suggestMode2" value="mode2" onchange="onSuggestModeChange()">
+                        <div>
+                            <strong style="color: #0f172a;">Cách 2: Để AI tự chọn chủ đề theo SGK Kết nối tri thức</strong>
+                            <div style="font-size: 0.78rem; color: #64748b;">AI tự phân bổ đều các mạch kiến thức bám sát PPCT của kỳ mà không cần tích chọn thủ công.</div>
+                        </div>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 6px 10px; border-radius: 6px; background: #f8fafc; border: 1px solid #e2e8f0;">
+                        <input type="radio" name="suggestMode" id="suggestMode3" value="mode3" onchange="onSuggestModeChange()">
+                        <div>
+                            <strong style="color: #0f172a;">Cách 3: Thầy/cô tự nhập định hướng kiểm tra / yêu cầu riêng</strong>
+                            <div style="font-size: 0.78rem; color: #64748b;">Tự do nhập yêu cầu chi tiết (ví dụ: ưu tiên bài học, dạng toán, ngữ liệu đọc hiểu theo ý muốn).</div>
+                        </div>
                     </label>
                 </div>
 
-                <!-- Checkbox list for manual selection -->
-                <div id="suggestTopicsContainer" style="display: none; max-height: 220px; overflow-y: auto; border: 1px solid var(--gray-300); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; background: #fafafa;">
-                    <div style="font-size: 0.8rem; color: var(--gray-600); margin-bottom: 6px;">Tích chọn các bài học / chủ điểm bạn muốn ưu tiên kiểm tra:</div>
-                    <div id="suggestTopicsList"></div>
+                <!-- Panel Cách 1: Tích chọn chủ đề -->
+                <div id="suggestContainerMode1" style="border: 1px solid var(--gray-300); border-radius: 6px; padding: 10px; margin-bottom: 12px; background: #fafafa;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+                        <div style="display: flex; gap: 6px;">
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="selectAllSuggestTopics()">✓ Chọn tất cả</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="deselectAllSuggestTopics()">✖ Bỏ chọn</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="defaultSuggestTopics()">⚡ Mặc định</button>
+                        </div>
+                        <span id="suggestTopicCounter" style="font-size: 0.825rem; font-weight: 600; color: #0e7490;">Đang nạp dữ liệu...</span>
+                    </div>
+                    <div id="suggestTopicsList" style="max-height: 240px; overflow-y: auto; padding-right: 4px;"></div>
                 </div>
 
-                <div class="field">
-                    <label>Yêu cầu riêng của giáo viên (tùy chọn):</label>
-                    <input type="text" id="suggestRequirementInput" placeholder="Ví dụ: Tập trung vào phân số và hình học, tăng câu hỏi vận dụng...">
+                <!-- Panel Cách 2: AI tự động -->
+                <div id="suggestContainerMode2" style="display: none; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 12px; margin-bottom: 12px; font-size: 0.85rem; color: #166534;">
+                    <span id="suggestAutoDesc"></span>
+                </div>
+
+                <!-- Panel Cách 3: Nhập yêu cầu riêng -->
+                <div id="suggestContainerMode3" style="display: none; margin-bottom: 12px;">
+                    <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 4px;">Định hướng kiểm tra / Yêu cầu riêng của thầy/cô:</label>
+                    <textarea id="suggestCustomTextarea" rows="4" style="width: 100%; border: 1px solid var(--gray-300); border-radius: 6px; padding: 8px; font-size: 0.85rem;" placeholder="Nhập định hướng kiểm tra..."></textarea>
+                    <div style="font-size: 0.78rem; color: var(--gray-600); margin-top: 4px;">
+                        💡 Lưu ý: AI sẽ kiểm tra tính hợp lệ về phân phối chương trình của khối lớp và kỳ kiểm tra hiện tại.
+                    </div>
                 </div>
 
                 <div style="text-align: right; margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 8px;">
@@ -378,6 +407,6 @@
         <div id="loadingText" style="font-size: 1rem; font-weight: 600;">Đang xử lý, vui lòng chờ...</div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=2.2"></script>
 </body>
 </html>

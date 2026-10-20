@@ -597,14 +597,28 @@ function onVietThemeSelected() {
 }
 
 async function auditVietMatrix() {
+    if (!currentUser || !sessionToken) {
+        alert("Vui lòng Đăng nhập hoặc Đăng ký tài khoản để sử dụng tính năng AI Rà soát ma trận!");
+        openAuthModal("login");
+        return;
+    }
+
     const grade = parseInt(document.getElementById("vietGradeSelect").value);
     const period = document.getElementById("vietPeriodSelect").value;
+
+    if (!isPeriodAllowedForUser(currentUser.packageType, period)) {
+        alert(`Tài khoản của Thầy/Cô thuộc gói ${currentUser.packageType}, không hỗ trợ đợt '${period}'. Vui lòng chọn đợt kiểm tra phù hợp hoặc nâng cấp Gói Cả Năm.`);
+        return;
+    }
 
     showLoading("AI đang rà soát ma trận Tiếng Việt...");
     try {
         const res = await fetch("/api/ai/viet/audit-matrix", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "X-Session-Token": sessionToken
+            },
             body: JSON.stringify({ grade, period, matrix: currentVietMatrix })
         });
         const data = await res.json();
@@ -621,17 +635,34 @@ async function auditVietMatrix() {
 }
 
 async function exportVietMatrix() {
+    if (!currentUser || !sessionToken) {
+        alert("Vui lòng Đăng nhập hoặc Đăng ký tài khoản để tải file Word Ma trận & Bản đặc tả!");
+        openAuthModal("login");
+        return;
+    }
+
     const grade = parseInt(document.getElementById("vietGradeSelect").value);
     const period = document.getElementById("vietPeriodSelect").value;
+
+    if (!isPeriodAllowedForUser(currentUser.packageType, period)) {
+        alert(`Tài khoản của Thầy/Cô thuộc gói ${currentUser.packageType}, không hỗ trợ đợt '${period}'. Vui lòng chọn đợt kiểm tra phù hợp hoặc nâng cấp Gói Cả Năm.`);
+        return;
+    }
 
     showLoading("Đang kết xuất tệp Word Ma trận & Bản đặc tả...");
     try {
         const res = await fetch("/api/export/viet/matrix", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "X-Session-Token": sessionToken
+            },
             body: JSON.stringify({ grade, period, matrix: currentVietMatrix })
         });
-        if (!res.ok) throw new Error("Xuất file thất bại");
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || "Xuất file thất bại");
+        }
         const blob = await res.blob();
         downloadBlob(blob, `MaTran_DacTa_TiengViet_Lop${grade}_${period.replace(/\s+/g, '_')}.docx`);
     } catch (err) {
@@ -908,14 +939,28 @@ function updateMathSummary() {
 }
 
 async function auditMathMatrix() {
+    if (!currentUser || !sessionToken) {
+        alert("Vui lòng Đăng nhập hoặc Đăng ký tài khoản để sử dụng tính năng AI Rà soát ma trận!");
+        openAuthModal("login");
+        return;
+    }
+
     const grade = parseInt(document.getElementById("mathGradeSelect").value);
     const period = document.getElementById("mathPeriodSelect").value;
+
+    if (!isPeriodAllowedForUser(currentUser.packageType, period)) {
+        alert(`Tài khoản của Thầy/Cô thuộc gói ${currentUser.packageType}, không hỗ trợ đợt '${period}'. Vui lòng chọn đợt kiểm tra phù hợp hoặc nâng cấp Gói Cả Năm.`);
+        return;
+    }
 
     showLoading("AI đang rà soát ma trận môn Toán...");
     try {
         const res = await fetch("/api/ai/math/audit-matrix", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "X-Session-Token": sessionToken
+            },
             body: JSON.stringify({ grade, period, matrix: currentMathMatrix })
         });
         const data = await res.json();
@@ -932,17 +977,34 @@ async function auditMathMatrix() {
 }
 
 async function exportMathMatrix() {
+    if (!currentUser || !sessionToken) {
+        alert("Vui lòng Đăng nhập hoặc Đăng ký tài khoản để tải file Word Ma trận & Bản đặc tả!");
+        openAuthModal("login");
+        return;
+    }
+
     const grade = parseInt(document.getElementById("mathGradeSelect").value);
     const period = document.getElementById("mathPeriodSelect").value;
+
+    if (!isPeriodAllowedForUser(currentUser.packageType, period)) {
+        alert(`Tài khoản của Thầy/Cô thuộc gói ${currentUser.packageType}, không hỗ trợ đợt '${period}'. Vui lòng chọn đợt kiểm tra phù hợp hoặc nâng cấp Gói Cả Năm.`);
+        return;
+    }
 
     showLoading("Đang kết xuất tệp Word Ma trận & Bản đặc tả môn Toán...");
     try {
         const res = await fetch("/api/export/math/matrix", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "X-Session-Token": sessionToken
+            },
             body: JSON.stringify({ grade, period, matrix: currentMathMatrix })
         });
-        if (!res.ok) throw new Error("Xuất file thất bại");
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || "Xuất file thất bại");
+        }
         const blob = await res.blob();
         downloadBlob(blob, `MaTran_DacTa_Toan_Lop${grade}_${period.replace(/\s+/g, '_')}.docx`);
     } catch (err) {
@@ -1238,9 +1300,21 @@ function defaultSuggestTopics() {
 }
 
 async function openSuggestModal(subject) {
+    if (!currentUser || !sessionToken) {
+        alert("Vui lòng Đăng nhập hoặc Đăng ký tài khoản để sử dụng tính năng AI Gợi ý ma trận & đặc tả!");
+        openAuthModal("login");
+        return;
+    }
+
     currentSuggestSubject = subject;
     const grade = document.getElementById(`${subject}GradeSelect`).value;
     const period = document.getElementById(`${subject}PeriodSelect`).value;
+
+    if (!isPeriodAllowedForUser(currentUser.packageType, period)) {
+        alert(`Tài khoản của Thầy/Cô thuộc gói ${currentUser.packageType}, không hỗ trợ đợt '${period}'. Vui lòng chọn đợt kiểm tra phù hợp hoặc nâng cấp Gói Cả Năm.`);
+        return;
+    }
+
     const subName = subject === "viet" ? "Môn Tiếng Việt" : "Môn Toán";
 
     // Mở modal ngay lập tức để người dùng có phản hồi thị giác
@@ -1371,7 +1445,10 @@ async function submitSuggestMatrix() {
     try {
         const res = await fetch(`/api/ai/${subject}/suggest-matrix`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "X-Session-Token": sessionToken
+            },
             body: JSON.stringify({
                 grade,
                 period,
@@ -1382,7 +1459,7 @@ async function submitSuggestMatrix() {
         });
 
         if (!res.ok) {
-            const err = await res.json();
+            const err = await res.json().catch(() => ({}));
             throw new Error(err.error || "Gợi ý ma trận thất bại");
         }
 

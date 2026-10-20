@@ -305,10 +305,25 @@ app.MapGet("/api/curriculum/math/ppct", (int grade, string period) =>
 });
 
 // 4. AI Generator Endpoints
-app.MapPost("/api/ai/viet/suggest-matrix", async (SuggestMatrixDto req) =>
+app.MapPost("/api/ai/viet/suggest-matrix", async (SuggestMatrixDto req, HttpContext ctx) =>
 {
     try
     {
+        string? token = ctx.Request.Headers["X-Session-Token"].FirstOrDefault();
+        UserRecord? user = null;
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            user = await authService.GetUserByTokenAsync(token);
+        }
+        if (user == null)
+        {
+            return Results.Json(new { error = "Vui lòng đăng nhập để sử dụng tính năng AI Gợi ý ma trận!" }, statusCode: 401);
+        }
+        if (!LicenseAuthService.IsPeriodAllowedForPackage(user.PackageType, req.Period))
+        {
+            return Results.BadRequest(new { error = $"Tài khoản thuộc gói {user.PackageType}, không hỗ trợ đợt '{req.Period}'." });
+        }
+
         var settings = GetEffectiveSettings(req.Settings);
         var gemini = new GeminiService();
         var suggestedItems = await gemini.SuggestVietMatrixAsync(
@@ -327,10 +342,25 @@ app.MapPost("/api/ai/viet/suggest-matrix", async (SuggestMatrixDto req) =>
     }
 });
 
-app.MapPost("/api/ai/math/suggest-matrix", async (SuggestMatrixDto req) =>
+app.MapPost("/api/ai/math/suggest-matrix", async (SuggestMatrixDto req, HttpContext ctx) =>
 {
     try
     {
+        string? token = ctx.Request.Headers["X-Session-Token"].FirstOrDefault();
+        UserRecord? user = null;
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            user = await authService.GetUserByTokenAsync(token);
+        }
+        if (user == null)
+        {
+            return Results.Json(new { error = "Vui lòng đăng nhập để sử dụng tính năng AI Gợi ý ma trận!" }, statusCode: 401);
+        }
+        if (!LicenseAuthService.IsPeriodAllowedForPackage(user.PackageType, req.Period))
+        {
+            return Results.BadRequest(new { error = $"Tài khoản thuộc gói {user.PackageType}, không hỗ trợ đợt '{req.Period}'." });
+        }
+
         var settings = GetEffectiveSettings(req.Settings);
         var gemini = new GeminiService();
         var suggestedItems = await gemini.SuggestMathMatrixAsync(
@@ -349,10 +379,25 @@ app.MapPost("/api/ai/math/suggest-matrix", async (SuggestMatrixDto req) =>
     }
 });
 
-app.MapPost("/api/ai/viet/audit-matrix", async (AuditVietMatrixDto req) =>
+app.MapPost("/api/ai/viet/audit-matrix", async (AuditVietMatrixDto req, HttpContext ctx) =>
 {
     try
     {
+        string? token = ctx.Request.Headers["X-Session-Token"].FirstOrDefault();
+        UserRecord? user = null;
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            user = await authService.GetUserByTokenAsync(token);
+        }
+        if (user == null)
+        {
+            return Results.Json(new { error = "Vui lòng đăng nhập để sử dụng tính năng AI Rà soát ma trận!" }, statusCode: 401);
+        }
+        if (!LicenseAuthService.IsPeriodAllowedForPackage(user.PackageType, req.Period))
+        {
+            return Results.BadRequest(new { error = $"Tài khoản thuộc gói {user.PackageType}, không hỗ trợ đợt '{req.Period}'." });
+        }
+
         var settings = GetEffectiveSettings(req.Settings);
         var gemini = new GeminiService();
         var report = await gemini.AuditVietMatrixAsync(settings, req.Grade, req.Period, req.Matrix);
@@ -364,10 +409,25 @@ app.MapPost("/api/ai/viet/audit-matrix", async (AuditVietMatrixDto req) =>
     }
 });
 
-app.MapPost("/api/ai/math/audit-matrix", async (AuditMathMatrixDto req) =>
+app.MapPost("/api/ai/math/audit-matrix", async (AuditMathMatrixDto req, HttpContext ctx) =>
 {
     try
     {
+        string? token = ctx.Request.Headers["X-Session-Token"].FirstOrDefault();
+        UserRecord? user = null;
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            user = await authService.GetUserByTokenAsync(token);
+        }
+        if (user == null)
+        {
+            return Results.Json(new { error = "Vui lòng đăng nhập để sử dụng tính năng AI Rà soát ma trận!" }, statusCode: 401);
+        }
+        if (!LicenseAuthService.IsPeriodAllowedForPackage(user.PackageType, req.Period))
+        {
+            return Results.BadRequest(new { error = $"Tài khoản thuộc gói {user.PackageType}, không hỗ trợ đợt '{req.Period}'." });
+        }
+
         var settings = GetEffectiveSettings(req.Settings);
         var gemini = new GeminiService();
         var report = await gemini.AuditMathMatrixAsync(settings, req.Grade, req.Period, req.Matrix);
@@ -480,8 +540,23 @@ app.MapPost("/api/ai/math/generate-exam", async (GenerateMathExamDto req, HttpCo
 });
 
 // 5. Word Export Endpoints (Direct Download)
-app.MapPost("/api/export/viet/matrix", async (ExportVietMatrixDto req) =>
+app.MapPost("/api/export/viet/matrix", async (ExportVietMatrixDto req, HttpContext ctx) =>
 {
+    string? token = ctx.Request.Headers["X-Session-Token"].FirstOrDefault();
+    UserRecord? user = null;
+    if (!string.IsNullOrWhiteSpace(token))
+    {
+        user = await authService.GetUserByTokenAsync(token);
+    }
+    if (user == null)
+    {
+        return Results.Json(new { error = "Vui lòng đăng nhập để tải file Word Ma trận!" }, statusCode: 401);
+    }
+    if (!LicenseAuthService.IsPeriodAllowedForPackage(user.PackageType, req.Period))
+    {
+        return Results.BadRequest(new { error = $"Tài khoản thuộc gói {user.PackageType}, không hỗ trợ đợt '{req.Period}'." });
+    }
+
     var tempFile = Path.Combine(Path.GetTempPath(), $"viet_matrix_{Guid.NewGuid():N}.docx");
     try
     {
@@ -544,8 +619,23 @@ app.MapPost("/api/export/viet/full", async (ExportVietExamDto req) =>
     }
 });
 
-app.MapPost("/api/export/math/matrix", async (ExportMathMatrixDto req) =>
+app.MapPost("/api/export/math/matrix", async (ExportMathMatrixDto req, HttpContext ctx) =>
 {
+    string? token = ctx.Request.Headers["X-Session-Token"].FirstOrDefault();
+    UserRecord? user = null;
+    if (!string.IsNullOrWhiteSpace(token))
+    {
+        user = await authService.GetUserByTokenAsync(token);
+    }
+    if (user == null)
+    {
+        return Results.Json(new { error = "Vui lòng đăng nhập để tải file Word Ma trận!" }, statusCode: 401);
+    }
+    if (!LicenseAuthService.IsPeriodAllowedForPackage(user.PackageType, req.Period))
+    {
+        return Results.BadRequest(new { error = $"Tài khoản thuộc gói {user.PackageType}, không hỗ trợ đợt '{req.Period}'." });
+    }
+
     var tempFile = Path.Combine(Path.GetTempPath(), $"math_matrix_{Guid.NewGuid():N}.docx");
     try
     {

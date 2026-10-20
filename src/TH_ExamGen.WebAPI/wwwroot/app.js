@@ -1041,6 +1041,18 @@ function closeGuideModal() {
     if (m) m.style.display = "none";
 }
 
+// ================= GEMINI KEY GUIDE MODAL =================
+
+function openGeminiKeyGuideModal() {
+    const m = document.getElementById("geminiKeyGuideModal");
+    if (m) m.style.display = "flex";
+}
+
+function closeGeminiKeyGuideModal() {
+    const m = document.getElementById("geminiKeyGuideModal");
+    if (m) m.style.display = "none";
+}
+
 // ================= SETTINGS MODAL =================
 
 function openSettingsModal() {

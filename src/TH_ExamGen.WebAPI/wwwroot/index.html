@@ -22,6 +22,7 @@
                 <!-- Trạng thái Chưa đăng nhập -->
                 <div id="guestUserSection" style="display: flex; gap: 8px; align-items: center;">
                     <button class="btn btn-outline-light btn-sm" onclick="openGuideModal()" title="Xem hướng dẫn từng bước">❓ Hướng dẫn</button>
+                    <button class="btn btn-outline-light btn-sm" onclick="openGeminiKeyGuideModal()" title="Hướng dẫn lấy mã khóa Google Gemini API miễn phí">🔑 Lấy Key Gemini</button>
                     <button class="btn btn-outline-light btn-sm" onclick="openPricingModal()">💎 Gói Bản Quyền</button>
                     <button class="btn btn-primary-light btn-sm" onclick="openAuthModal('login')" style="font-weight: 600;">🔑 Đăng nhập / Đăng ký</button>
                     <button class="btn btn-secondary btn-sm" onclick="openSettingsModal()">⚙ Cấu hình trường</button>
@@ -35,6 +36,7 @@
                         <span style="opacity: 0.85;">(Hôm nay: <strong id="headerUserDaily">0/5</strong>)</span>
                     </div>
                     <button class="btn btn-outline-light btn-sm" onclick="openGuideModal()" title="Xem hướng dẫn từng bước">❓ Hướng dẫn</button>
+                    <button class="btn btn-outline-light btn-sm" onclick="openGeminiKeyGuideModal()" title="Hướng dẫn lấy mã khóa Google Gemini API miễn phí">🔑 Lấy Key Gemini</button>
                     <button class="btn btn-outline-light btn-sm" onclick="openMyExamsModal()" title="Xem lại các đề đã sinh mà không tốn lượt">📂 Kho đề của tôi</button>
                     <button class="btn btn-success btn-sm" onclick="openPricingModal()" title="Nâng cấp gói bản quyền hoặc nạp mã">💎 Nạp Key</button>
                     <button class="btn btn-secondary btn-sm" onclick="openSettingsModal()" title="Cấu hình tên trường hiển thị trên đề thi">⚙ Trường</button>
@@ -303,9 +305,15 @@
                     </select>
                 </div>
                 <div class="field">
-                    <label>Gemini API Key:</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <label style="margin-bottom: 0;">Gemini API Key:</label>
+                        <a href="javascript:void(0)" onclick="openGeminiKeyGuideModal()" style="font-size: 0.8rem; color: #2563eb; text-decoration: underline; font-weight: 600; cursor: pointer;">🔑 Hướng dẫn lấy Key miễn phí (1 phút)</a>
+                    </div>
                     <input type="password" id="cfgGeminiKey" placeholder="Để trống nếu máy chủ Render đã cấu hình">
-                    <div class="field-hint">Khóa API sẽ được dùng để gọi AI sinh ma trận và đề thi.</div>
+                    <div class="field-hint" style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                        <span>Khóa API dùng để gọi AI sinh ma trận và đề thi.</span>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="openGeminiKeyGuideModal()" style="font-size: 0.75rem; padding: 2px 8px; border: 1px solid #bfdbfe; color: #1d4ed8; background: #eff6ff; border-radius: 4px; cursor: pointer;">📖 Xem hướng dẫn lấy khóa</button>
+                    </div>
                 </div>
                 <div class="field">
                     <label>DeepSeek API Key (Tùy chọn):</label>
@@ -643,8 +651,10 @@
                     <div style="display: flex; gap: 12px; align-items: flex-start; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px;">
                         <div style="background: #2563eb; color: #fff; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">1</div>
                         <div>
-                            <strong style="color: #0f172a;">Bước 1: Cài đặt thông tin trường (Nút ⚙ Trường)</strong>
-                            <div style="font-size: 0.825rem; color: #475569;">Nhập Tên Phòng/UBND, Tên Trường và Năm học để tự động in lên tiêu đề các tệp Word đề thi.</div>
+                            <strong style="color: #0f172a;">Bước 1: Cài đặt thông tin trường &amp; Khóa AI (Nút ⚙ Trường)</strong>
+                            <div style="font-size: 0.825rem; color: #475569;">
+                                Nhập Tên Phòng/UBND, Tên Trường và Năm học. Thầy/Cô có thể dùng khóa mặc định hệ thống hoặc <a href="javascript:void(0)" onclick="openGeminiKeyGuideModal()" style="color: #2563eb; font-weight: 600; text-decoration: underline;">xem cách lấy khóa Gemini API riêng miễn phí</a> để ưu tiên tốc độ tối đa.
+                            </div>
                         </div>
                     </div>
 
@@ -688,12 +698,88 @@
         </div>
     </div>
 
+    <!-- Modal Hướng Dẫn Lấy Khóa Gemini API Miễn Phí -->
+    <div class="modal" id="geminiKeyGuideModal" style="display: none;">
+        <div class="modal-content" style="max-width: 680px; padding: 24px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--gray-200); padding-bottom: 12px; margin-bottom: 16px;">
+                <h3 style="font-size: 1.2rem; font-weight: 700; color: #1e3a8a; display: flex; align-items: center; gap: 8px;">
+                    <span>🔑</span> Hướng Dẫn Lấy Khóa Google Gemini API Miễn Phí
+                </h3>
+                <button class="modal-close" onclick="closeGeminiKeyGuideModal()">&times;</button>
+            </div>
+            <div style="font-size: 0.9rem; color: var(--gray-700); line-height: 1.6;">
+                <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 10px 14px; border-radius: 4px; margin-bottom: 16px; font-size: 0.875rem; color: #166534;">
+                    🎁 <strong>100% Hoàn Toàn Miễn Phí:</strong> Google cấp khóa Gemini API miễn phí cho mọi tài khoản Gmail với hạn mức rất lớn, đủ để Thầy/Cô sinh hàng trăm đề thi mỗi tháng với tốc độ cao nhất và bảo mật riêng tư tuyệt đối!
+                </div>
+
+                <div style="text-align: center; margin: 12px 0 18px 0;">
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="padding: 10px 24px; font-weight: 700; font-size: 0.95rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(37,99,235,0.25);">
+                        <span>🚀</span> Bấm Vào Đây Để Mở Trang Google AI Studio (Tab mới) ↗
+                    </a>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                    <div style="display: flex; gap: 12px; align-items: flex-start; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px;">
+                        <div style="background: #0284c7; color: #fff; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">1</div>
+                        <div>
+                            <strong style="color: #0f172a;">Bước 1: Đăng nhập Google AI Studio</strong>
+                            <div style="font-size: 0.825rem; color: #475569;">
+                                Truy cập <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" style="color: #0284c7; font-weight: 600;">aistudio.google.com/app/apikey</a> và đăng nhập bằng tài khoản <strong>Gmail</strong> của Thầy/Cô. (Nếu thấy bảng Điều khoản dịch vụ hiện ra, tích chọn đồng ý rồi bấm <em>Continue</em>).
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; align-items: flex-start; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px;">
+                        <div style="background: #0284c7; color: #fff; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">2</div>
+                        <div>
+                            <strong style="color: #0f172a;">Bước 2: Bấm nút "Create API key" màu xanh</strong>
+                            <div style="font-size: 0.825rem; color: #475569;">
+                                Nhìn sang góc trên bên phải màn hình (hoặc ở giữa trang), bấm nút màu xanh dương có chữ <strong>"Create API key"</strong> (Tạo khóa API).
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; align-items: flex-start; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px;">
+                        <div style="background: #0284c7; color: #fff; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">3</div>
+                        <div>
+                            <strong style="color: #0f172a;">Bước 3: Chọn "Create API key in new project"</strong>
+                            <div style="font-size: 0.825rem; color: #475569;">
+                                Một hộp thoại nhỏ mở ra, bấm chọn dòng <strong>"Create API key in new project"</strong> (Tạo khóa trong dự án mới). Google sẽ tự động tạo khóa trong khoảng 2 giây.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; align-items: flex-start; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px;">
+                        <div style="background: #0284c7; color: #fff; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">4</div>
+                        <div>
+                            <strong style="color: #0f172a;">Bước 4: Sao chép (Copy) và dán vào phần mềm</strong>
+                            <div style="font-size: 0.825rem; color: #475569;">
+                                Bấm biểu tượng <strong>Copy</strong> bên cạnh chuỗi ký tự vừa tạo (bắt đầu bằng <code>AIzaSy...</code>). Sau đó quay lại TH_ExamGen, bấm nút <strong>⚙ Trường</strong>, dán vào ô <strong>Gemini API Key</strong> rồi bấm <strong>Lưu Cấu Hình</strong> là xong!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 6px; padding: 10px 14px; margin-bottom: 18px; font-size: 0.825rem; color: #92400e;">
+                    💡 <strong>Mẹo nhỏ:</strong> Khóa này gắn liền vĩnh viễn với tài khoản Gmail của Thầy/Cô. Thầy/Cô chỉ cần cài đặt 1 lần duy nhất, trình duyệt sẽ tự ghi nhớ để sinh đề cho các lần sau mà không cần nhập lại.
+                </div>
+
+                <div style="text-align: center; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary" style="padding: 9px 20px; font-weight: 600; text-decoration: none; border: 1px solid #2563eb; color: #2563eb; border-radius: 6px;">
+                        ↗ Mở Google AI Studio
+                    </a>
+                    <button class="btn btn-primary" style="padding: 9px 36px; font-size: 1rem; font-weight: 700; border-radius: 6px;" onclick="closeGeminiKeyGuideModal()">Đã hiểu &amp; Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-spinner"></div>
         <div id="loadingText" style="font-size: 1rem; font-weight: 600;">Đang xử lý, vui lòng chờ...</div>
     </div>
 
-    <script src="app.js?v=2.4"></script>
+    <script src="app.js?v=2.5"></script>
 </body>
 </html>

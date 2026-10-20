@@ -325,6 +325,10 @@ app.MapPost("/api/ai/viet/suggest-matrix", async (SuggestMatrixDto req, HttpCont
         }
 
         var settings = GetEffectiveSettings(req.Settings);
+        if (string.IsNullOrWhiteSpace(settings.GeminiApiKey))
+        {
+            return Results.BadRequest(new { error = "Thầy/Cô chưa cài đặt Google Gemini API Key. Vui lòng bấm '⚙ Cấu hình' hoặc xem hướng dẫn để lấy mã khóa miễn phí trước khi thao tác!" });
+        }
         var gemini = new GeminiService();
         var suggestedItems = await gemini.SuggestVietMatrixAsync(
             settings,
@@ -362,6 +366,10 @@ app.MapPost("/api/ai/math/suggest-matrix", async (SuggestMatrixDto req, HttpCont
         }
 
         var settings = GetEffectiveSettings(req.Settings);
+        if (string.IsNullOrWhiteSpace(settings.GeminiApiKey))
+        {
+            return Results.BadRequest(new { error = "Thầy/Cô chưa cài đặt Google Gemini API Key. Vui lòng bấm '⚙ Cấu hình' hoặc xem hướng dẫn để lấy mã khóa miễn phí trước khi thao tác!" });
+        }
         var gemini = new GeminiService();
         var suggestedItems = await gemini.SuggestMathMatrixAsync(
             settings,
@@ -399,6 +407,10 @@ app.MapPost("/api/ai/viet/audit-matrix", async (AuditVietMatrixDto req, HttpCont
         }
 
         var settings = GetEffectiveSettings(req.Settings);
+        if (string.IsNullOrWhiteSpace(settings.GeminiApiKey))
+        {
+            return Results.BadRequest(new { error = "Thầy/Cô chưa cài đặt Google Gemini API Key. Vui lòng bấm '⚙ Cấu hình' hoặc xem hướng dẫn để lấy mã khóa miễn phí trước khi thao tác!" });
+        }
         var gemini = new GeminiService();
         var report = await gemini.AuditVietMatrixAsync(settings, req.Grade, req.Period, req.Matrix);
         return Results.Ok(new { report });
@@ -429,6 +441,10 @@ app.MapPost("/api/ai/math/audit-matrix", async (AuditMathMatrixDto req, HttpCont
         }
 
         var settings = GetEffectiveSettings(req.Settings);
+        if (string.IsNullOrWhiteSpace(settings.GeminiApiKey))
+        {
+            return Results.BadRequest(new { error = "Thầy/Cô chưa cài đặt Google Gemini API Key. Vui lòng bấm '⚙ Cấu hình' hoặc xem hướng dẫn để lấy mã khóa miễn phí trước khi thao tác!" });
+        }
         var gemini = new GeminiService();
         var report = await gemini.AuditMathMatrixAsync(settings, req.Grade, req.Period, req.Matrix);
         return Results.Ok(new { report });
@@ -467,6 +483,10 @@ app.MapPost("/api/ai/viet/generate-exam", async (GenerateVietExamDto req, HttpCo
         }
 
         var settings = GetEffectiveSettings(req.Settings);
+        if (string.IsNullOrWhiteSpace(settings.GeminiApiKey))
+        {
+            return Results.BadRequest(new { error = "Thầy/Cô chưa cài đặt Google Gemini API Key. Vui lòng bấm '⚙ Cấu hình' hoặc xem hướng dẫn để lấy mã khóa miễn phí trước khi sinh đề!" });
+        }
         var gemini = new GeminiService();
         var paper = await gemini.GenerateVietExamAsync(
             settings,
@@ -518,6 +538,10 @@ app.MapPost("/api/ai/math/generate-exam", async (GenerateMathExamDto req, HttpCo
         }
 
         var settings = GetEffectiveSettings(req.Settings);
+        if (string.IsNullOrWhiteSpace(settings.GeminiApiKey))
+        {
+            return Results.BadRequest(new { error = "Thầy/Cô chưa cài đặt Google Gemini API Key. Vui lòng bấm '⚙ Cấu hình' hoặc xem hướng dẫn để lấy mã khóa miễn phí trước khi sinh đề!" });
+        }
         var gemini = new GeminiService();
         var paper = await gemini.GenerateMathExamAsync(
             settings,

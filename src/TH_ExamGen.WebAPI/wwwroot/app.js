@@ -611,6 +611,13 @@ async function auditVietMatrix() {
         return;
     }
 
+    const apiKey = getClientApiKey();
+    if (!apiKey) {
+        alert("Thầy/Cô chưa cài đặt Google Gemini API Key. Vui lòng lấy khóa miễn phí theo hướng dẫn và dán vào phần mềm để rà soát ma trận!");
+        openGeminiKeyGuideModal();
+        return;
+    }
+
     showLoading("AI đang rà soát ma trận Tiếng Việt...");
     try {
         const res = await fetch("/api/ai/viet/audit-matrix", {
@@ -619,7 +626,7 @@ async function auditVietMatrix() {
                 "Content-Type": "application/json",
                 "X-Session-Token": sessionToken
             },
-            body: JSON.stringify({ grade, period, matrix: currentVietMatrix })
+            body: JSON.stringify({ grade, period, matrix: currentVietMatrix, settings: getClientSettings() })
         });
         const data = await res.json();
         if (data.report) {
@@ -657,7 +664,7 @@ async function exportVietMatrix() {
                 "Content-Type": "application/json",
                 "X-Session-Token": sessionToken
             },
-            body: JSON.stringify({ grade, period, matrix: currentVietMatrix })
+            body: JSON.stringify({ grade, period, matrix: currentVietMatrix, settings: getClientSettings() })
         });
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
@@ -684,6 +691,13 @@ async function generateVietExam() {
 
     if (!isPeriodAllowedForUser(currentUser.packageType, period)) {
         alert(`Tài khoản của Thầy/Cô thuộc gói ${currentUser.packageType}, không hỗ trợ tạo đề thi đợt '${period}'. Vui lòng chọn đợt kiểm tra phù hợp hoặc nâng cấp Gói Cả Năm.`);
+        return;
+    }
+
+    const apiKey = getClientApiKey();
+    if (!apiKey) {
+        alert("Thầy/Cô chưa cài đặt Google Gemini API Key. Vui lòng lấy khóa miễn phí theo hướng dẫn và dán vào phần mềm để bắt đầu sinh đề!");
+        openGeminiKeyGuideModal();
         return;
     }
     const isAiPassage = document.querySelector('input[name="vietPassageMode"]:checked').value === 'ai';
@@ -721,7 +735,8 @@ async function generateVietExam() {
                 durationMinutes: 35,
                 theme,
                 matrix: currentVietMatrix,
-                passage
+                passage,
+                settings: getClientSettings()
             })
         });
 
@@ -822,7 +837,7 @@ async function exportVietExamOnly() {
         const res = await fetch("/api/export/viet/exam", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ paper: currentVietPaper, skipValidation: false })
+            body: JSON.stringify({ paper: currentVietPaper, skipValidation: false, settings: getClientSettings() })
         });
         if (!res.ok) throw new Error("Xuất đề thi thất bại");
         const blob = await res.blob();
@@ -841,7 +856,7 @@ async function exportVietFullPackage() {
         const res = await fetch("/api/export/viet/full", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ paper: currentVietPaper, skipValidation: false })
+            body: JSON.stringify({ paper: currentVietPaper, skipValidation: false, settings: getClientSettings() })
         });
         if (!res.ok) throw new Error("Xuất trọn bộ thất bại");
         const blob = await res.blob();
@@ -953,6 +968,13 @@ async function auditMathMatrix() {
         return;
     }
 
+    const apiKey = getClientApiKey();
+    if (!apiKey) {
+        alert("Thầy/Cô chưa cài đặt Google Gemini API Key. Vui lòng lấy khóa miễn phí theo hướng dẫn và dán vào phần mềm để rà soát ma trận!");
+        openGeminiKeyGuideModal();
+        return;
+    }
+
     showLoading("AI đang rà soát ma trận môn Toán...");
     try {
         const res = await fetch("/api/ai/math/audit-matrix", {
@@ -961,7 +983,7 @@ async function auditMathMatrix() {
                 "Content-Type": "application/json",
                 "X-Session-Token": sessionToken
             },
-            body: JSON.stringify({ grade, period, matrix: currentMathMatrix })
+            body: JSON.stringify({ grade, period, matrix: currentMathMatrix, settings: getClientSettings() })
         });
         const data = await res.json();
         if (data.report) {
@@ -999,7 +1021,7 @@ async function exportMathMatrix() {
                 "Content-Type": "application/json",
                 "X-Session-Token": sessionToken
             },
-            body: JSON.stringify({ grade, period, matrix: currentMathMatrix })
+            body: JSON.stringify({ grade, period, matrix: currentMathMatrix, settings: getClientSettings() })
         });
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
@@ -1029,6 +1051,13 @@ async function generateMathExam() {
         return;
     }
 
+    const apiKey = getClientApiKey();
+    if (!apiKey) {
+        alert("Thầy/Cô chưa cài đặt Google Gemini API Key. Vui lòng lấy khóa miễn phí theo hướng dẫn và dán vào phần mềm để bắt đầu sinh đề!");
+        openGeminiKeyGuideModal();
+        return;
+    }
+
     showLoading("AI đang sinh các câu hỏi và đáp án môn Toán... Quá trình có thể mất 30-40 giây.");
     try {
         const res = await fetch("/api/ai/math/generate-exam", {
@@ -1041,7 +1070,8 @@ async function generateMathExam() {
                 grade,
                 period,
                 durationMinutes: 40,
-                matrix: currentMathMatrix
+                matrix: currentMathMatrix,
+                settings: getClientSettings()
             })
         });
 
@@ -1139,7 +1169,7 @@ async function exportMathExamOnly() {
         const res = await fetch("/api/export/math/exam", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ paper: currentMathPaper, skipValidation: false })
+            body: JSON.stringify({ paper: currentMathPaper, skipValidation: false, settings: getClientSettings() })
         });
         if (!res.ok) throw new Error("Xuất đề thi thất bại");
         const blob = await res.blob();
@@ -1158,7 +1188,7 @@ async function exportMathFullPackage() {
         const res = await fetch("/api/export/math/full", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ paper: currentMathPaper, skipValidation: false })
+            body: JSON.stringify({ paper: currentMathPaper, skipValidation: false, settings: getClientSettings() })
         });
         if (!res.ok) throw new Error("Xuất trọn bộ thất bại");
         const blob = await res.blob();
@@ -1205,57 +1235,99 @@ function closeSettingsModal() {
     document.getElementById("settingsModal").style.display = "none";
 }
 
+function getClientApiKey() {
+    return (localStorage.getItem("thexam_user_gemini_key") || "").trim();
+}
+
+function getClientSettings() {
+    const localKey = getClientApiKey();
+    return {
+        tenUBND: localStorage.getItem("thexam_user_ubnd") || (appSettings.tenUBND || ""),
+        tenTruong: localStorage.getItem("thexam_user_truong") || (appSettings.tenTruong || ""),
+        namHoc: localStorage.getItem("thexam_user_namhoc") || (appSettings.namHoc || ""),
+        aiProvider: localStorage.getItem("thexam_user_provider") || (appSettings.aiProvider || "Gemini"),
+        geminiModel: localStorage.getItem("thexam_user_model") || (appSettings.geminiModel || "gemini-2.5-flash"),
+        geminiApiKey: localKey,
+        deepSeekApiKey: (localStorage.getItem("thexam_user_deepseek_key") || "").trim()
+    };
+}
+
 async function loadSettings() {
     try {
         const res = await fetch("/api/settings");
         if (res.ok) {
-            const data = await res.json();
-            appSettings = data;
-            document.getElementById("cfgUbnd").value = data.tenUBND || "";
-            document.getElementById("cfgTruong").value = data.tenTruong || "";
-            document.getElementById("cfgNamHoc").value = data.namHoc || "";
-            document.getElementById("cfgAiProvider").value = data.aiProvider || "Gemini";
-            if (data.geminiModel) {
-                const modelVal = (data.geminiModel === "gemini-1.5-flash" || data.geminiModel === "gemini-2.0-flash")
-                    ? "gemini-2.5-flash"
-                    : data.geminiModel;
-                document.getElementById("cfgGeminiModel").value = modelVal;
-            }
-            if (data.hasGeminiKey) {
-                document.getElementById("cfgGeminiKey").placeholder = data.geminiApiKey || "(Đã lưu khóa)";
-            }
+            appSettings = await res.json();
         }
     } catch (e) {
         console.error("Could not load settings", e);
     }
+
+    const localUbnd = localStorage.getItem("thexam_user_ubnd");
+    const localTruong = localStorage.getItem("thexam_user_truong");
+    const localNamHoc = localStorage.getItem("thexam_user_namhoc");
+    const localModel = localStorage.getItem("thexam_user_model");
+    const localKey = getClientApiKey();
+
+    document.getElementById("cfgUbnd").value = localUbnd !== null ? localUbnd : (appSettings.tenUBND || "");
+    document.getElementById("cfgTruong").value = localTruong !== null ? localTruong : (appSettings.tenTruong || "");
+    document.getElementById("cfgNamHoc").value = localNamHoc !== null ? localNamHoc : (appSettings.namHoc || "");
+    document.getElementById("cfgAiProvider").value = localStorage.getItem("thexam_user_provider") || (appSettings.aiProvider || "Gemini");
+
+    const activeModel = localModel || appSettings.geminiModel || "gemini-2.5-flash";
+    const modelVal = (activeModel === "gemini-1.5-flash" || activeModel === "gemini-2.0-flash") ? "gemini-2.5-flash" : activeModel;
+    document.getElementById("cfgGeminiModel").value = modelVal;
+
+    if (localKey) {
+        document.getElementById("cfgGeminiKey").value = localKey;
+    } else {
+        document.getElementById("cfgGeminiKey").value = "";
+        document.getElementById("cfgGeminiKey").placeholder = "Dán mã khóa Google Gemini (AIzaSy...) vào đây";
+    }
 }
 
 async function saveSettings() {
+    const ubnd = document.getElementById("cfgUbnd").value.trim();
+    const truong = document.getElementById("cfgTruong").value.trim();
+    const namHoc = document.getElementById("cfgNamHoc").value.trim();
+    const provider = document.getElementById("cfgAiProvider").value;
+    const model = document.getElementById("cfgGeminiModel").value;
+    const geminiKey = document.getElementById("cfgGeminiKey").value.trim();
+    const deepSeekKey = document.getElementById("cfgDeepSeekKey").value.trim();
+
+    localStorage.setItem("thexam_user_ubnd", ubnd);
+    localStorage.setItem("thexam_user_truong", truong);
+    localStorage.setItem("thexam_user_namhoc", namHoc);
+    localStorage.setItem("thexam_user_provider", provider);
+    localStorage.setItem("thexam_user_model", model);
+    if (geminiKey) {
+        localStorage.setItem("thexam_user_gemini_key", geminiKey);
+    }
+    if (deepSeekKey) {
+        localStorage.setItem("thexam_user_deepseek_key", deepSeekKey);
+    }
+
     const payload = {
-        tenUBND: document.getElementById("cfgUbnd").value.trim(),
-        tenTruong: document.getElementById("cfgTruong").value.trim(),
-        namHoc: document.getElementById("cfgNamHoc").value.trim(),
-        aiProvider: document.getElementById("cfgAiProvider").value,
-        geminiModel: document.getElementById("cfgGeminiModel").value,
-        geminiApiKey: document.getElementById("cfgGeminiKey").value.trim(),
-        deepSeekApiKey: document.getElementById("cfgDeepSeekKey").value.trim()
+        tenUBND: ubnd,
+        tenTruong: truong,
+        namHoc: namHoc,
+        aiProvider: provider,
+        geminiModel: model,
+        geminiApiKey: geminiKey,
+        deepSeekApiKey: deepSeekKey
     };
 
     try {
-        const res = await fetch("/api/settings", {
+        await fetch("/api/settings", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
-        if (res.ok) {
-            alert("Đã lưu cấu hình thành công!");
-            closeSettingsModal();
-        } else {
-            alert("Lỗi lưu cấu hình");
-        }
     } catch (e) {
-        alert("Lỗi kết nối: " + e.message);
+        // Fallback to local storage if server write is unavailable
     }
+
+    alert("Đã lưu cấu hình và khóa API thành công vào trình duyệt!");
+    closeSettingsModal();
 }
 
 // ================= SUGGEST & PPCT MODALS =================
@@ -1312,6 +1384,13 @@ async function openSuggestModal(subject) {
 
     if (!isPeriodAllowedForUser(currentUser.packageType, period)) {
         alert(`Tài khoản của Thầy/Cô thuộc gói ${currentUser.packageType}, không hỗ trợ đợt '${period}'. Vui lòng chọn đợt kiểm tra phù hợp hoặc nâng cấp Gói Cả Năm.`);
+        return;
+    }
+
+    const apiKey = getClientApiKey();
+    if (!apiKey) {
+        alert("Thầy/Cô chưa cài đặt Google Gemini API Key. Vui lòng lấy khóa miễn phí theo hướng dẫn và dán vào phần mềm để gợi ý ma trận!");
+        openGeminiKeyGuideModal();
         return;
     }
 
@@ -1454,7 +1533,8 @@ async function submitSuggestMatrix() {
                 period,
                 requirement,
                 autoSelectTopics,
-                selectedTopics
+                selectedTopics,
+                settings: getClientSettings()
             })
         });
 

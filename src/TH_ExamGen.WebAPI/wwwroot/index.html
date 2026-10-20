@@ -309,7 +309,7 @@
                         <label style="margin-bottom: 0;">Gemini API Key:</label>
                         <a href="javascript:void(0)" onclick="openGeminiKeyGuideModal()" style="font-size: 0.8rem; color: #2563eb; text-decoration: underline; font-weight: 600; cursor: pointer;">🔑 Hướng dẫn lấy Key miễn phí (1 phút)</a>
                     </div>
-                    <input type="password" id="cfgGeminiKey" placeholder="Để trống nếu máy chủ Render đã cấu hình">
+                    <input type="password" id="cfgGeminiKey" placeholder="Dán mã khóa Google Gemini (AIzaSy...) vào đây">
                     <div class="field-hint" style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
                         <span>Khóa API dùng để gọi AI sinh ma trận và đề thi.</span>
                         <button type="button" class="btn btn-outline-primary btn-sm" onclick="openGeminiKeyGuideModal()" style="font-size: 0.75rem; padding: 2px 8px; border: 1px solid #bfdbfe; color: #1d4ed8; background: #eff6ff; border-radius: 4px; cursor: pointer;">📖 Xem hướng dẫn lấy khóa</button>
@@ -777,7 +777,8 @@
                     <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary" style="padding: 9px 20px; font-weight: 600; text-decoration: none; border: 1px solid #2563eb; color: #2563eb; border-radius: 6px;">
                         ↗ Mở Google AI Studio
                     </a>
-                    <button class="btn btn-primary" style="padding: 9px 36px; font-size: 1rem; font-weight: 700; border-radius: 6px;" onclick="closeGeminiKeyGuideModal()">Đã hiểu &amp; Đóng</button>
+                    <button class="btn btn-success" style="padding: 9px 20px; font-weight: 700; border-radius: 6px;" onclick="closeGeminiKeyGuideModal(); openSettingsModal();">⚙ Nhập Key vào Cấu hình</button>
+                    <button class="btn btn-primary" style="padding: 9px 28px; font-size: 1rem; font-weight: 700; border-radius: 6px;" onclick="closeGeminiKeyGuideModal()">Đã hiểu &amp; Đóng</button>
                 </div>
             </div>
         </div>
@@ -789,6 +790,6 @@
         <div id="loadingText" style="font-size: 1rem; font-weight: 600;">Đang xử lý, vui lòng chờ...</div>
     </div>
 
-    <script src="app.js?v=2.7"></script>
+    <script src="app.js?v=2.8"></script>
 </body>
 </html>

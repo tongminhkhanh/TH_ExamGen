@@ -471,6 +471,35 @@ namespace TH_ExamGen.WebAPI.Services
 
         // ================= ADMIN MANAGEMENT =================
 
+        public static bool IsPeriodAllowedForPackage(string? packageType, string? period)
+        {
+            if (string.IsNullOrWhiteSpace(period)) return true;
+            if (string.IsNullOrWhiteSpace(packageType) || 
+                packageType.Equals("Year", StringComparison.OrdinalIgnoreCase) || 
+                packageType.Equals("School", StringComparison.OrdinalIgnoreCase) || 
+                packageType.Equals("SchoolItem", StringComparison.OrdinalIgnoreCase) ||
+                packageType.Equals("Trial", StringComparison.OrdinalIgnoreCase))
+            {
+                return true; // Trial, Year, School mở khóa toàn bộ các kỳ
+            }
+
+            var p = period.Trim();
+            // Gói Học kỳ I
+            if (packageType.Equals("Term1", StringComparison.OrdinalIgnoreCase))
+            {
+                return p.Contains("Học kỳ I", StringComparison.OrdinalIgnoreCase) && !p.Contains("Học kỳ II", StringComparison.OrdinalIgnoreCase);
+            }
+
+            // Gói Học kỳ II (mặc định cho Term hoặc Term2)
+            if (packageType.Equals("Term", StringComparison.OrdinalIgnoreCase) || 
+                packageType.Equals("Term2", StringComparison.OrdinalIgnoreCase))
+            {
+                return p.Contains("Học kỳ II", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return true;
+        }
+
         public bool VerifyAdminPin(string pin)
         {
             var envPin = Environment.GetEnvironmentVariable("ADMIN_PIN") ?? "888888";
@@ -489,7 +518,9 @@ namespace TH_ExamGen.WebAPI.Services
             using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
-                list.Add(MapUser(reader));
+                var u = MapUser(reader);
+                u.PasswordHash = ""; // Ẩn hash mật khẩu để đảm bảo an toàn
+                list.Add(u);
             }
             return list;
         }
@@ -500,7 +531,7 @@ namespace TH_ExamGen.WebAPI.Services
             var user = await GetUserByPhoneAsync(phone);
             if (user == null) return false;
 
-            int days = packageType == "Year" ? 365 : (packageType == "School" ? 365 : (packageType == "Bonus5" ? 0 : 150));
+            int days = (packageType == "Year" || packageType == "School") ? 365 : (packageType == "Bonus5" ? 0 : 150);
             int quota = packageType == "Year" ? 30 : (packageType == "School" ? 100 : (packageType == "Bonus5" ? 5 : 15));
             int dailyLimit = packageType == "Year" ? 4 : (packageType == "School" ? 10 : (packageType == "Bonus5" ? user.DailyQuotaLimit : 2));
 
@@ -550,10 +581,10 @@ namespace TH_ExamGen.WebAPI.Services
 
         public async Task<List<string>> AdminGenerateKeysAsync(string packageType, int count)
         {
-            int days = packageType == "Year" ? 365 : (packageType == "SchoolItem" ? 365 : 150);
+            int days = (packageType == "Year" || packageType == "SchoolItem") ? 365 : 150;
             int quota = packageType == "Year" ? 30 : (packageType == "SchoolItem" ? 20 : 15);
             int dailyLimit = packageType == "Year" ? 4 : (packageType == "SchoolItem" ? 3 : 2);
-            string prefix = packageType == "Year" ? "NAM" : (packageType == "SchoolItem" ? "TRUONG" : "KY");
+            string prefix = packageType == "Year" ? "NAM" : (packageType == "SchoolItem" ? "TRUONG" : (packageType == "Term1" ? "KY1" : "KY2"));
 
             var generatedCodes = new List<string>();
             using var conn = _db.CreateConnection();

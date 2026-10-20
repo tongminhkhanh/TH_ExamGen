@@ -114,7 +114,7 @@
             Nhập mã PIN chủ (Master PIN) để truy cập cổng quản trị khách hàng và tạo mã bản quyền.
         </p>
         <div style="margin-bottom: 1rem;">
-            <input type="password" id="adminPinInput" placeholder="Nhập mã PIN (Mặc định: 888888)" style="width: 100%; padding: 10px 14px; font-size: 1.1rem; text-align: center; border: 2px solid var(--gray-300); border-radius: 8px; letter-spacing: 4px;">
+            <input type="password" id="adminPinInput" placeholder="Nhập mã PIN Quản trị viên" style="width: 100%; padding: 10px 14px; font-size: 1.1rem; text-align: center; border: 2px solid var(--gray-300); border-radius: 8px; letter-spacing: 4px;">
         </div>
         <button class="btn btn-primary" style="width: 100%; justify-content: center; padding: 10px; font-size: 0.95rem;" onclick="submitAdminAuth()">
             🚀 Mở Khóa Bảng Điều Khiển
@@ -218,9 +218,10 @@
                     <div>
                         <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 4px;">Loại gói bản quyền:</label>
                         <select id="keyGenPackageType" style="width: 100%; padding: 8px 10px; border: 1px solid var(--gray-300); border-radius: 6px;">
-                            <option value="Term">Gói Học Kỳ (15 đề / 150 ngày / Max 2 đề/ngày)</option>
-                            <option value="Year" selected>Gói Cả Năm (30 đề / 365 ngày / Max 4 đề/ngày)</option>
-                            <option value="SchoolItem">Gói Tổ Chuyên Môn / Trường (1 mã x 20 đề / 365 ngày)</option>
+                            <option value="Term2" selected>Gói Học Kỳ II (15 đề / 150 ngày / Max 2 đề/ngày - 69k)</option>
+                            <option value="Term1">Gói Học Kỳ I (15 đề / 150 ngày / Max 2 đề/ngày - 69k)</option>
+                            <option value="Year">Gói Cả Năm (30 đề / 365 ngày / Max 4 đề/ngày - 119k)</option>
+                            <option value="SchoolItem">Gói Tổ Chuyên Môn / Trường (1 mã x 20 đề / 365 ngày - 299k combo 5)</option>
                         </select>
                     </div>
                     <div>
@@ -465,7 +466,8 @@ CREATE TABLE IF NOT EXISTS exam_logs (
                 const tr = document.createElement("tr");
 
                 let pkgBadge = `<span class="admin-badge badge-trial">Dùng thử</span>`;
-                if (u.packageType === "Term") pkgBadge = `<span class="admin-badge badge-term">Gói Kỳ</span>`;
+                if (u.packageType === "Term" || u.packageType === "Term2") pkgBadge = `<span class="admin-badge badge-term">Gói Kỳ II</span>`;
+                else if (u.packageType === "Term1") pkgBadge = `<span class="admin-badge badge-term">Gói Kỳ I</span>`;
                 else if (u.packageType === "Year") pkgBadge = `<span class="admin-badge badge-year">Gói Năm</span>`;
                 else if (u.packageType === "School" || u.packageType === "SchoolItem") pkgBadge = `<span class="admin-badge badge-school">Gói Trường</span>`;
 
@@ -488,7 +490,8 @@ CREATE TABLE IF NOT EXISTS exam_logs (
                     <td style="text-align: center;">${statusHtml}</td>
                     <td style="text-align: center;">
                         <div style="display: flex; gap: 4px; justify-content: center; flex-wrap: wrap;">
-                            <button class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="adminActivateUser('${u.phone}', 'Term')" title="Kích hoạt Gói Kỳ (15 đề / 150 ngày)">+ Kỳ</button>
+                            <button class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="adminActivateUser('${u.phone}', 'Term1')" title="Kích hoạt Gói Kỳ I (15 đề / 150 ngày)">+ Kỳ I</button>
+                            <button class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="adminActivateUser('${u.phone}', 'Term2')" title="Kích hoạt Gói Kỳ II (15 đề / 150 ngày)">+ Kỳ II</button>
                             <button class="btn btn-primary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="adminActivateUser('${u.phone}', 'Year')" title="Kích hoạt Gói Năm (30 đề / 365 ngày)">+ Năm</button>
                             <button class="btn btn-success btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="adminActivateUser('${u.phone}', 'Bonus5')" title="Tặng thêm 5 đề">+5 Đề</button>
                             <button class="btn ${isLocked ? 'btn-success' : 'btn-danger'} btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="adminToggleLock('${u.id}')">

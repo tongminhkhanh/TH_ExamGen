@@ -401,6 +401,11 @@ app.MapPost("/api/ai/viet/generate-exam", async (GenerateVietExamDto req, HttpCo
             return Results.BadRequest(new { error = reason });
         }
 
+        if (!LicenseAuthService.IsPeriodAllowedForPackage(user.PackageType, req.Period))
+        {
+            return Results.BadRequest(new { error = $"Tài khoản của Thầy/Cô thuộc gói {user.PackageType}, không hỗ trợ tạo đề thi đợt '{req.Period}'. Vui lòng chọn đợt kiểm tra phù hợp hoặc nâng cấp Gói Cả Năm." });
+        }
+
         var settings = GetEffectiveSettings(req.Settings);
         var gemini = new GeminiService();
         var paper = await gemini.GenerateVietExamAsync(
@@ -445,6 +450,11 @@ app.MapPost("/api/ai/math/generate-exam", async (GenerateMathExamDto req, HttpCo
         if (!allowed)
         {
             return Results.BadRequest(new { error = reason });
+        }
+
+        if (!LicenseAuthService.IsPeriodAllowedForPackage(user.PackageType, req.Period))
+        {
+            return Results.BadRequest(new { error = $"Tài khoản của Thầy/Cô thuộc gói {user.PackageType}, không hỗ trợ tạo đề thi đợt '{req.Period}'. Vui lòng chọn đợt kiểm tra phù hợp hoặc nâng cấp Gói Cả Năm." });
         }
 
         var settings = GetEffectiveSettings(req.Settings);

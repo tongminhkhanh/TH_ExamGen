@@ -49,6 +49,7 @@ function updateUserHeaderUI(user) {
     if (!user) {
         guestSec.style.display = "flex";
         loggedInSec.style.display = "none";
+        updatePeriodSelectOptionsForUser(null);
         return;
     }
 
@@ -60,8 +61,11 @@ function updateUserHeaderUI(user) {
     
     const tierBadge = document.getElementById("headerUserTier");
     if (tierBadge) {
-        if (user.packageType === "Term") {
-            tierBadge.innerText = "Gói Kỳ";
+        if (user.packageType === "Term1") {
+            tierBadge.innerText = "Gói Kỳ I";
+            tierBadge.style.background = "#0284c7";
+        } else if (user.packageType === "Term" || user.packageType === "Term2") {
+            tierBadge.innerText = "Gói Kỳ II";
             tierBadge.style.background = "#0284c7";
         } else if (user.packageType === "Year") {
             tierBadge.innerText = "Gói Năm";
@@ -80,6 +84,71 @@ function updateUserHeaderUI(user) {
 
     const dailyEl = document.getElementById("headerUserDaily");
     if (dailyEl) dailyEl.innerText = `${user.dailyGeneratedCount}/${user.dailyQuotaLimit}`;
+
+    updatePeriodSelectOptionsForUser(user);
+}
+
+function isPeriodAllowedForUser(packageType, period) {
+    if (!period) return true;
+    if (!packageType || packageType === "Year" || packageType === "School" || packageType === "SchoolItem" || packageType === "Trial") {
+        return true;
+    }
+    const p = period.trim();
+    if (packageType === "Term1") {
+        return p.includes("Học kỳ I") && !p.includes("Học kỳ II");
+    }
+    if (packageType === "Term" || packageType === "Term2") {
+        return p.includes("Học kỳ II");
+    }
+    return true;
+}
+
+function updatePeriodSelectOptionsForUser(user) {
+    const packageType = user ? user.packageType : "Trial";
+    const selects = [
+        { el: document.getElementById("vietPeriodSelect"), reload: loadVietCurriculum },
+        { el: document.getElementById("mathPeriodSelect"), reload: loadMathCurriculum }
+    ];
+
+    selects.forEach(({ el, reload }) => {
+        if (!el) return;
+        let hasValidSelected = false;
+        let needsReload = false;
+
+        for (let i = 0; i < el.options.length; i++) {
+            const opt = el.options[i];
+            const rawText = opt.getAttribute("data-raw-text") || opt.text.replace(/^🔒\s*/, "").replace(/\s*\(Cần nâng cấp gói\)$/, "");
+            opt.setAttribute("data-raw-text", rawText);
+
+            const allowed = isPeriodAllowedForUser(packageType, opt.value);
+            if (allowed) {
+                opt.disabled = false;
+                opt.text = rawText;
+                if (opt.selected) hasValidSelected = true;
+            } else {
+                opt.disabled = true;
+                opt.text = `🔒 ${rawText} (Cần nâng cấp gói)`;
+                if (opt.selected) {
+                    opt.selected = false;
+                    needsReload = true;
+                }
+            }
+        }
+
+        if (!hasValidSelected) {
+            for (let i = 0; i < el.options.length; i++) {
+                if (!el.options[i].disabled) {
+                    el.selectedIndex = i;
+                    needsReload = true;
+                    break;
+                }
+            }
+        }
+
+        if (needsReload && typeof reload === "function") {
+            reload();
+        }
+    });
 }
 
 function openAuthModal(tab = "login") {
@@ -574,13 +643,18 @@ async function exportVietMatrix() {
 
 async function generateVietExam() {
     if (!currentUser || !sessionToken) {
-        alert("Vui lòng Đăng nhập hoặc Đăng ký (nhận 3 đề dùng thử miễn phí) để tạo đề thi!");
+        alert("Vui lòng Đăng nhập hoặc Đăng ký (nhận 1 đề dùng thử miễn phí) để tạo đề thi!");
         openAuthModal("login");
         return;
     }
 
     const grade = parseInt(document.getElementById("vietGradeSelect").value);
     const period = document.getElementById("vietPeriodSelect").value;
+
+    if (!isPeriodAllowedForUser(currentUser.packageType, period)) {
+        alert(`Tài khoản của Thầy/Cô thuộc gói ${currentUser.packageType}, không hỗ trợ tạo đề thi đợt '${period}'. Vui lòng chọn đợt kiểm tra phù hợp hoặc nâng cấp Gói Cả Năm.`);
+        return;
+    }
     const isAiPassage = document.querySelector('input[name="vietPassageMode"]:checked').value === 'ai';
     const theme = document.getElementById("vietThemeCustomInput").value.trim() || document.getElementById("vietThemeSelect").value;
 
@@ -880,13 +954,18 @@ async function exportMathMatrix() {
 
 async function generateMathExam() {
     if (!currentUser || !sessionToken) {
-        alert("Vui lòng Đăng nhập hoặc Đăng ký (nhận 3 đề dùng thử miễn phí) để tạo đề thi!");
+        alert("Vui lòng Đăng nhập hoặc Đăng ký (nhận 1 đề dùng thử miễn phí) để tạo đề thi!");
         openAuthModal("login");
         return;
     }
 
     const grade = parseInt(document.getElementById("mathGradeSelect").value);
     const period = document.getElementById("mathPeriodSelect").value;
+
+    if (!isPeriodAllowedForUser(currentUser.packageType, period)) {
+        alert(`Tài khoản của Thầy/Cô thuộc gói ${currentUser.packageType}, không hỗ trợ tạo đề thi đợt '${period}'. Vui lòng chọn đợt kiểm tra phù hợp hoặc nâng cấp Gói Cả Năm.`);
+        return;
+    }
 
     showLoading("AI đang sinh các câu hỏi và đáp án môn Toán... Quá trình có thể mất 30-40 giây.");
     try {

@@ -7,5 +7,19 @@ publish/
 *.suo
 .vs/
 
+# Secrets & Environment Variables
+.env
+*.env
+*.env.*
+!.env.example
+secrets.*
+*.key
+*.pem
+
+# Local Scratch & Temporary Files
+momo.jpg
+*.log
+scratch/
+
 # Word test outputs
 test_*.docx
